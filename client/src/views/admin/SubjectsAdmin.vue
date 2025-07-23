@@ -53,7 +53,6 @@
                 <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                 <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
                 <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Icon</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Lessons</th>
                 <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
                 <th class="px-6 py-3 text-left text-small font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
               </tr>
@@ -73,9 +72,6 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <i :class="subject.icon || 'fas fa-book'" class="text-gray-600 dark:text-gray-400"></i>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-body text-gray-500 dark:text-gray-400">
-                  {{ subject.lessons || 0 }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-body text-gray-500 dark:text-gray-400">
                   {{ formatDate(subject.createdAt) }}
@@ -140,12 +136,11 @@
               <label for="subjectCategory">Category</label>
               <select id="subjectCategory" v-model="newSubject.category" class="form-input" required>
                 <option value="">Select a category</option>
-                <option value="programming">Programming</option>
-                <option value="web">Web Development</option>
-                <option value="database">Database</option>
-                <option value="data">Data Science</option>
-                <option value="design">Design</option>
-                <option value="other">Other</option>
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
+                <option value="senior secondary">Senior Secondary</option>
+                <option value="university">University</option>
+                <option value="special">Special</option>
               </select>
             </div>
             <div class="form-group">
@@ -156,17 +151,6 @@
                 type="text" 
                 class="form-input"
                 placeholder="e.g., fas fa-code"
-              >
-            </div>
-            <div class="form-group">
-              <label for="subjectLessons">Number of Lessons</label>
-              <input 
-                id="subjectLessons"
-                v-model.number="newSubject.lessons" 
-                type="number" 
-                min="0"
-                class="form-input"
-                placeholder="Enter number of lessons"
               >
             </div>
           </form>
@@ -205,9 +189,16 @@ export default {
       newSubject: {
         name: '',
         category: '',
-        icon: 'fas fa-book',
-        lessons: 0
-      }
+        icon: 'fas fa-book'
+      },
+      // Categories matching the backend enum
+      categories: [
+        { value: 'primary', label: 'Primary' },
+        { value: 'secondary', label: 'Secondary' },
+        { value: 'senior secondary', label: 'Senior Secondary' },
+        { value: 'university', label: 'University' },
+        { value: 'special', label: 'Special' }
+      ]
     }
   },
   computed: {
@@ -233,6 +224,7 @@ export default {
       }
     },
     async createSubject() {
+      console.log('Creating subject with data:', this.newSubject); // Add this line
       try {
         await createSubject(this.newSubject)
         await this.fetchSubjects()
@@ -240,11 +232,11 @@ export default {
         this.newSubject = { 
           name: '', 
           category: '', 
-          icon: 'fas fa-book', 
-          lessons: 0 
+          icon: 'fas fa-book'
         }
       } catch (error) {
         console.error('Error creating subject:', error)
+        alert('Error creating subject: ' + error.message) // Add this line for user feedback
       }
     },
     editSubject(subject) {

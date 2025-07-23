@@ -2,12 +2,10 @@ const Subject = require('../models/SubjectModel');
 
 const getAllSubjects = async (req, res) => {
     try {
-        const { category, difficulty, featured } = req.query;
-        let filter = { isActive: true };
+        const { category } = req.query;
+        let filter = {}; // Remove isActive filter
         
         if (category) filter.category = category;
-        if (difficulty) filter.difficulty = difficulty;
-        if (featured === 'true') filter.isFeatured = true;
         
         const subjects = await Subject.find(filter).sort({ createdAt: -1 });
         res.status(200).json({
@@ -26,8 +24,9 @@ const getAllSubjects = async (req, res) => {
 
 const getFeaturedSubjects = async (req, res) => {
     try {
-        const subjects = await Subject.find({ isFeatured: true, isActive: true })
-            .sort({ rating: -1 })
+        // Remove this function or update logic since isFeatured field is removed
+        const subjects = await Subject.find({})
+            .sort({ createdAt: -1 })
             .limit(6);
         res.status(200).json({
             success: true,

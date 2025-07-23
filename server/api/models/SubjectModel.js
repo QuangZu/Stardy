@@ -10,15 +10,12 @@ const subjectSchema = new mongoose.Schema(
         category: {
             type: String,
             required: true,
+            enum: ['primary', 'secondary', 'senior secondary', 'university', 'special'],
             errorMessage: "Subject category is required"
         },
         icon: {
             type: String,
             default: 'fas fa-book'
-        },
-        lessons: {
-            type: Number,
-            default: 0
         },
         createdAt: {
             type: Date,

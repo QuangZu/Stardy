@@ -20,7 +20,7 @@ const SubjectRouter = (app) => {
     // Admin routes
     app.route('/api/admin/subjects')
         .get(authenticate, requireRole('admin'), SubjectController.getAllSubjects)
-        .post(authenticate, SubjectController.createSubject);
+        .post(authenticate, requireRole('admin'), SubjectController.createSubject);
 
     app.route('/api/admin/subjects/:id')
         .get(authenticate, requireRole('admin'), SubjectController.getSubjectById)
