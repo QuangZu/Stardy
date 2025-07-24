@@ -180,9 +180,19 @@
 <script>
 import { register } from '@/api/Auth'
 import Navigation from '@/components/Navigation.vue'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'RegisterView',
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
+  },
   data() {
     return {
       username: '',
@@ -331,13 +341,14 @@ export default {
           localStorage.setItem('token', response.token);
         }
         
+        this.showSuccess('Registration successful! Please log in with your credentials.');
         // Redirect to login on success
         this.$router.push('/login');
       } catch (error) {
         console.error('Registration failed:', error);
         // Handle registration error - show user-friendly message
         const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-        alert(errorMessage);
+        this.showError(errorMessage);
       } finally {
         this.loading = false;
       }

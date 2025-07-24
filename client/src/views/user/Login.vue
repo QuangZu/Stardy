@@ -134,11 +134,21 @@
 </template>
 
 <script>
-import { login } from '@/api/Auth'
+import { login } from '@/api/Account'
 import Navigation from '@/components/Navigation.vue'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'LoginView',
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
+  },
   data() {
     return {
       email: '',
@@ -215,7 +225,7 @@ export default {
       } catch (error) {
         console.error('Login error:', error);
         // Show user-friendly error message
-        alert('Login failed. Please check your credentials and try again.');
+        this.showError('Login failed. Please check your credentials and try again.');
       } finally {
         this.loading = false;
       }

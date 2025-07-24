@@ -133,13 +133,20 @@
             </div>
             <div class="form-group">
               <label>Category</label>
+              <!-- Create Subject Modal -->
               <select v-model="newSubject.category" class="form-select" required>
                 <option value="">Select a category</option>
-                <option value="primary">Primary</option>
-                <option value="secondary">Secondary</option>
-                <option value="senior secondary">Senior Secondary</option>
-                <option value="university">University</option>
-                <option value="special">Special</option>
+                <option v-for="category in categories" :key="category.value" :value="category.value">
+                  {{ category.label }}
+                </option>
+              </select>
+              
+              <!-- Edit Subject Modal -->
+              <select v-model="editingSubject.category" class="form-select" required>
+                <option value="">Select a category</option>
+                <option v-for="category in categories" :key="category.value" :value="category.value">
+                  {{ category.label }}
+                </option>
               </select>
             </div>
             <div class="form-group">
@@ -224,7 +231,8 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
-import { getAllSubjects, createSubject, updateSubject, deleteSubject } from '@/api/Subject.js'
+import { getAllSubjects, createSubject, updateSubject, deleteSubject, getSubjectCategories } from '@/api/Subject'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'SubjectsAdmin',
@@ -232,10 +240,20 @@ export default {
     AdminSidebar,
     AdminHeader
   },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
+  },
   data() {
     return {
       currentUser: JSON.parse(localStorage.getItem('user') || '{}'),
       subjects: [],
+      categories: [],
       searchQuery: '',
       showCreateSubjectModal: false,
       showEditModal: false,
@@ -259,19 +277,36 @@ export default {
   },
   mounted() {
     this.fetchSubjects()
+    this.fetchCategories()
   },
   methods: {
     async fetchSubjects() {
       try {
         this.loading = true
         const response = await getAllSubjects()
-        // Handle the API response properly - extract data array
         this.subjects = response.data || response || []
       } catch (error) {
         console.error('Error fetching subjects:', error)
+        this.showError('Error', 'Failed to fetch subjects. Please try again.')
         this.subjects = []
       } finally {
         this.loading = false
+      }
+    },
+    async fetchCategories() {
+      try {
+        this.categories = await getSubjectCategories()
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        this.showWarning('Warning', 'Failed to fetch categories. Using default categories.')
+        // Fallback to default categories
+        this.categories = [
+          { value: 'primary', label: 'Primary' },
+          { value: 'secondary', label: 'Secondary' },
+          { value: 'senior secondary', label: 'Senior Secondary' },
+          { value: 'university', label: 'University' },
+          { value: 'special', label: 'Special' }
+        ]
       }
     },
     async createSubject() {
@@ -280,8 +315,10 @@ export default {
         await this.fetchSubjects()
         this.showCreateSubjectModal = false
         this.newSubject = { name: '', category: '', icon: 'fas fa-book' }
+        this.showSuccess('Success', 'Subject created successfully!')
       } catch (error) {
         console.error('Error creating subject:', error)
+        this.showError('Error', 'Failed to create subject. Please try again.')
       }
     },
     editSubject(subject) {
@@ -293,17 +330,24 @@ export default {
         await updateSubject(this.editingSubject._id, this.editingSubject)
         await this.fetchSubjects()
         this.closeEditModal()
+        this.showSuccess('Success', 'Subject updated successfully!')
       } catch (error) {
         console.error('Error updating subject:', error)
+        this.showError('Error', 'Failed to update subject. Please try again.')
       }
     },
-    async deleteSubject(subjectId) {
+    async deleteSubject(subject) {
+      // Extract ID from subject object if it's an object, otherwise use as ID
+      const subjectId = typeof subject === 'object' ? subject._id : subject
+      
       if (confirm('Are you sure you want to delete this subject?')) {
         try {
           await deleteSubject(subjectId)
           await this.fetchSubjects()
+          this.showSuccess('Success', 'Subject deleted successfully!')
         } catch (error) {
           console.error('Error deleting subject:', error)
+          this.showError('Error', 'Failed to delete subject. Please try again.')
         }
       }
     },

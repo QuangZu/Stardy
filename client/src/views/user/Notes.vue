@@ -176,11 +176,21 @@ import { getAccount } from '@/api/Account';
 import { getUserNotes, createNote, updateNote, deleteNote, toggleNoteFavorite } from '@/api/Note';
 import { getAllSubjects } from '@/api/Subject';
 import Sidebar from '@/components/Sidebar.vue';
+import { useNotification } from '@/composables/useNotification';
 
 export default {
   name: 'Notes',
   components: {
     Sidebar
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -366,7 +376,7 @@ export default {
     
     async saveNote() {
       if (!this.noteForm.title.trim() || !this.noteForm.content.trim()) {
-        alert('Please fill in both title and content');
+        this.showWarning('Please fill in both title and content');
         return;
       }
       
@@ -413,10 +423,11 @@ export default {
         this.updateCategoryNoteCounts();
         this.filterNotes();
         this.closeModal();
+        this.showSuccess(this.showEditModal ? 'Note updated successfully!' : 'Note created successfully!');
         
       } catch (error) {
         console.error('Error saving note:', error);
-        alert('Failed to save note. Please try again.');
+        this.showError('Failed to save note. Please try again.');
       }
     },
     
@@ -430,10 +441,11 @@ export default {
             this.notes.splice(noteIndex, 1);
             this.updateCategoryNoteCounts();
             this.filterNotes();
+            this.showSuccess('Note deleted successfully!');
           }
         } catch (error) {
           console.error('Error deleting note:', error);
-          alert('Failed to delete note. Please try again.');
+          this.showError('Failed to delete note. Please try again.');
         }
       }
     },
@@ -442,9 +454,10 @@ export default {
       try {
         await toggleNoteFavorite(note.id);
         note.isFavorite = !note.isFavorite;
+        this.showSuccess(note.isFavorite ? 'Added to favorites!' : 'Removed from favorites!');
       } catch (error) {
         console.error('Error toggling favorite:', error);
-        alert('Failed to update favorite status.');
+        this.showError('Failed to update favorite status.');
       }
     },
     

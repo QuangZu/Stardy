@@ -168,6 +168,7 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
+import { useNotification } from '@/composables/useNotification'
 import { getAllAIRequests, checkAIHealth } from '@/api/AI.js'
 
 export default {
@@ -175,6 +176,15 @@ export default {
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -209,13 +219,16 @@ export default {
         this.aiRequests = await getAllAIRequests()
       } catch (error) {
         console.error('Error fetching AI requests:', error)
+        this.showError('Error', 'Failed to fetch AI requests. Please try again.')
       }
     },
     async checkAIHealth() {
       try {
         this.aiHealth = await checkAIHealth()
+        this.showSuccess('Success', 'AI health status updated successfully!')
       } catch (error) {
         console.error('Error checking AI health:', error)
+        this.showError('Error', 'Failed to check AI health status.')
       }
     },
     async updateAIConfig() {
@@ -223,8 +236,10 @@ export default {
         // API call to update AI configuration would go here
         console.log('Updating AI config:', this.aiConfig)
         this.showAIConfigModal = false
+        this.showSuccess('Success', 'AI configuration updated successfully!')
       } catch (error) {
         console.error('Error updating AI config:', error)
+        this.showError('Error', 'Failed to update AI configuration.')
       }
     },
     getTodayRequests() {

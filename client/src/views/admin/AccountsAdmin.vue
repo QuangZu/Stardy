@@ -246,6 +246,7 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
+import { useNotification } from '@/composables/useNotification'
 import { getAllAccounts, createAccount, updateAccount, deleteAccount } from '@/api/Account.js'
 
 export default {
@@ -253,6 +254,15 @@ export default {
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -290,6 +300,7 @@ export default {
         this.accounts = await getAllAccounts()
       } catch (error) {
         console.error('Error fetching accounts:', error)
+        this.showError('Error', 'Failed to fetch accounts. Please try again.')
       } finally {
         this.loading = false
       }
@@ -300,8 +311,10 @@ export default {
         await this.fetchAccounts()
         this.showCreateAccountModal = false
         this.newAccount = { username: '', email: '', password: '', role: 'user' }
+        this.showSuccess('Success', 'Account created successfully!')
       } catch (error) {
         console.error('Error creating account:', error)
+        this.showError('Error', 'Failed to create account. Please try again.')
       }
     },
     editAccount(account) {
@@ -313,8 +326,10 @@ export default {
         await updateAccount(this.editingAccount._id, this.editingAccount)
         await this.fetchAccounts()
         this.closeEditModal()
+        this.showSuccess('Success', 'Account updated successfully!')
       } catch (error) {
         console.error('Error updating account:', error)
+        this.showError('Error', 'Failed to update account. Please try again.')
       }
     },
     async deleteAccount(accountId) {
@@ -322,8 +337,10 @@ export default {
         try {
           await deleteAccount(accountId)
           await this.fetchAccounts()
+          this.showSuccess('Success', 'Account deleted successfully!')
         } catch (error) {
           console.error('Error deleting account:', error)
+          this.showError('Error', 'Failed to delete account. Please try again.')
         }
       }
     },

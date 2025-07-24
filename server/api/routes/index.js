@@ -10,6 +10,7 @@ const AIRouter = require('./AIRoutes');
 const NoteRouter = require('./NoteRoutes');
 const ScheduleRouter = require('./ScheduleRoutes');
 const SubjectRouter = require('./SubjectRoutes');
+const StatisticRouter = require('./StatisticRoutes');
 
 const routes = (app) => {
     AccountRouter(app);
@@ -24,6 +25,7 @@ const routes = (app) => {
     NoteRouter(app);
     ScheduleRouter(app);
     SubjectRouter(app);
+    StatisticRouter(app);
 };
 
 module.exports = routes;

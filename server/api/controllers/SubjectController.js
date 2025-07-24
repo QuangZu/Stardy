@@ -3,7 +3,7 @@ const Subject = require('../models/SubjectModel');
 const getAllSubjects = async (req, res) => {
     try {
         const { category } = req.query;
-        let filter = {}; // Remove isActive filter
+        let filter = {};
         
         if (category) filter.category = category;
         
@@ -17,26 +17,6 @@ const getAllSubjects = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch subjects',
-            error: error.message
-        });
-    }
-}
-
-const getFeaturedSubjects = async (req, res) => {
-    try {
-        // Remove this function or update logic since isFeatured field is removed
-        const subjects = await Subject.find({})
-            .sort({ createdAt: -1 })
-            .limit(6);
-        res.status(200).json({
-            success: true,
-            data: subjects
-        });
-    } catch (error) {
-        console.error('Error fetching featured subjects:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch featured subjects',
             error: error.message
         });
     }
@@ -205,6 +185,28 @@ const searchSubjects = async (req, res) => {
     }
 }
 
+const getSubjectCategories = async (req, res) => {
+    try {
+        const categories = await Subject.distinct('category');
+        const formattedCategories = categories.filter(cat => cat).map(category => ({
+            value: category,
+            label: category.charAt(0).toUpperCase() + category.slice(1)
+        }));
+        
+        res.status(200).json({
+            success: true,
+            data: formattedCategories
+        });
+    } catch (error) {
+        console.error('Error fetching subject categories:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch subject categories',
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     getAllSubjects,
     getFeaturedSubjects,
@@ -213,5 +215,6 @@ module.exports = {
     createSubject,
     updateSubject,
     deleteSubject,
-    searchSubjects
+    searchSubjects,
+    getSubjectCategories
 };

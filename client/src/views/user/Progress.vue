@@ -187,11 +187,21 @@ import { getAccount } from '@/api/Account';
 import { getUserProgress } from '@/api/UserProgress';
 import { getAllSubjects } from '@/api/Subject';
 import Sidebar from '@/components/Sidebar.vue';
+import { useNotification } from '@/composables/useNotification';
 
 export default {
   name: 'Progress',
   components: {
     Sidebar
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -279,7 +289,7 @@ export default {
             progress: this.getSubjectProgress(subject._id, userProgressData)
           }));
         } catch (subjectError) {
-          console.warn('Could not load subjects:', subjectError);
+          this.showWarning('Could not load subjects data');
           this.subjectProgress = [];
         }
         
@@ -290,7 +300,7 @@ export default {
         this.learningGoals = await this.generateLearningGoals(userProgressData);
         
       } catch (error) {
-        console.error('Error loading progress data:', error);
+        this.showError('Failed to load progress data');
         this.error = 'Failed to load progress data';
         
         if (error.message.includes('token') || error.response?.status === 401) {

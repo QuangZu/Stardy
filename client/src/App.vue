@@ -7,16 +7,21 @@
     
     <!-- Global AI Chatbot -->
     <Chatbot v-if="showChatbot" />
+    
+    <!-- Global Notification Container -->
+    <NotificationContainer />
   </div>
 </template>
 
 <script>
 import Chatbot from './components/Chatbot.vue';
+import NotificationContainer from './components/NotificationContainer.vue';
 
 export default {
   name: 'App',
   components: {
-    Chatbot
+    Chatbot,
+    NotificationContainer
   },
   computed: {
     showChatbot() {

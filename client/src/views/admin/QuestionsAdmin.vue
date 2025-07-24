@@ -182,12 +182,22 @@ import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
 import { getAllQAs, createQA, deleteQA } from '@/api/QA.js'
 import { getAllSubjects } from '@/api/Subject.js'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'QuestionsAdmin',
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -222,6 +232,7 @@ export default {
         this.questions = await getAllQAs()
       } catch (error) {
         console.error('Error fetching questions:', error)
+        this.showError('Error', 'Failed to fetch questions. Please try again.')
       }
     },
     async fetchSubjects() {
@@ -229,6 +240,7 @@ export default {
         this.subjects = await getAllSubjects()
       } catch (error) {
         console.error('Error fetching subjects:', error)
+        this.showWarning('Warning', 'Failed to fetch subjects. Some features may be limited.')
       }
     },
     getSubjectName(subjectId) {
@@ -241,20 +253,25 @@ export default {
         await this.fetchQuestions()
         this.showCreateQuestionModal = false
         this.newQuestion = { question: '', subjectId: '', levelId: 1, type: 'multiple-choice' }
+        this.showSuccess('Success', 'Question created successfully!')
       } catch (error) {
         console.error('Error creating question:', error)
+        this.showError('Error', 'Failed to create question. Please try again.')
       }
     },
     editQuestion(question) {
       console.log('Edit question:', question)
+      this.showInfo('Info', 'Edit functionality will be implemented soon.')
     },
     async deleteQuestion(questionId) {
       if (confirm('Are you sure you want to delete this question?')) {
         try {
           await deleteQA(questionId)
           await this.fetchQuestions()
+          this.showSuccess('Success', 'Question deleted successfully!')
         } catch (error) {
           console.error('Error deleting question:', error)
+          this.showError('Error', 'Failed to delete question. Please try again.')
         }
       }
     },

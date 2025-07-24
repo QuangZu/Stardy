@@ -7,7 +7,7 @@ const getAuthHeader = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const getAdminStats = async () => {
+export const getStatistic = async () => {
     try {
         const response = await axios.get(`${backendURL}/admin/stats`, {
             headers: getAuthHeader()

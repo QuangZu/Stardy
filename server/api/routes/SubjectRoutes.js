@@ -5,11 +5,11 @@ const SubjectRouter = (app) => {
     app.route('/api/subjects')
         .get(SubjectController.getAllSubjects)
     
+    app.route('/api/subjects/categories')
+        .get(SubjectController.getSubjectCategories)
+    
     app.route('/api/subjects/:id')
         .get(SubjectController.getSubjectById)
-
-    app.route('/api/subjects/featured')
-        .get(SubjectController.getFeaturedSubjects)
 
     app.route('/api/subjects/category/:category')
         .get(SubjectController.getSubjectsByCategory)
@@ -21,6 +21,9 @@ const SubjectRouter = (app) => {
     app.route('/api/admin/subjects')
         .get(authenticate, requireRole('admin'), SubjectController.getAllSubjects)
         .post(authenticate, requireRole('admin'), SubjectController.createSubject);
+
+    app.route('/api/admin/subjects/categories')
+        .get(authenticate, requireRole('admin'), SubjectController.getSubjectCategories);
 
     app.route('/api/admin/subjects/:id')
         .get(authenticate, requireRole('admin'), SubjectController.getSubjectById)

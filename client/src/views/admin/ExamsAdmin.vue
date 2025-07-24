@@ -253,6 +253,7 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
+import { useNotification } from '@/composables/useNotification'
 import { getAllExams, createExam, updateExam, deleteExam } from '@/api/Exam.js'
 import { getAllSubjects } from '@/api/Subject.js'
 
@@ -261,6 +262,15 @@ export default {
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -303,6 +313,7 @@ export default {
         this.exams = await getAllExams()
       } catch (error) {
         console.error('Error fetching exams:', error)
+        this.showError('Error', 'Failed to fetch exams. Please try again.')
       }
     },
     async fetchSubjects() {
@@ -310,6 +321,7 @@ export default {
         this.subjects = await getAllSubjects()
       } catch (error) {
         console.error('Error fetching subjects:', error)
+        this.showWarning('Warning', 'Failed to fetch subjects. Some features may be limited.')
       }
     },
     getSubjectName(subjectId) {
@@ -322,8 +334,10 @@ export default {
         await this.fetchExams()
         this.showCreateExamModal = false
         this.newExam = { title: '', subjectId: '', difficulty: 'easy', duration: 60 }
+        this.showSuccess('Success', 'Exam created successfully!')
       } catch (error) {
         console.error('Error creating exam:', error)
+        this.showError('Error', 'Failed to create exam. Please try again.')
       }
     },
     editExam(exam) {
@@ -336,8 +350,10 @@ export default {
         await this.fetchExams()
         this.showEditExamModal = false
         this.editingExam = { _id: '', title: '', subjectId: '', difficulty: 'easy', duration: 60 }
+        this.showSuccess('Success', 'Exam updated successfully!')
       } catch (error) {
         console.error('Error updating exam:', error)
+        this.showError('Error', 'Failed to update exam. Please try again.')
       }
     },
     async deleteExam(examId) {
@@ -345,8 +361,10 @@ export default {
         try {
           await deleteExam(examId)
           await this.fetchExams()
+          this.showSuccess('Success', 'Exam deleted successfully!')
         } catch (error) {
           console.error('Error deleting exam:', error)
+          this.showError('Error', 'Failed to delete exam. Please try again.')
         }
       }
     },

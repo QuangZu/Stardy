@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const backendURL = process.env.VUE_APP_API_URL || 'http://localhost:3000/api';
+const backendURL = 'https://stardy-3old.onrender.com/api';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -99,6 +99,18 @@ export const deleteSubject = async (id) => {
         return response.data;
     } catch (error) {
         console.error('Error deleting subject:', error);
+        throw error;
+    }
+};
+
+export const getSubjectCategories = async () => {
+    try {
+        const response = await axios.get(`${backendURL}/admin/subjects/categories`, {
+            headers: getAuthHeader()
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching subject categories:', error);
         throw error;
     }
 };

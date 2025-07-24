@@ -213,11 +213,21 @@ import { getUserProgress } from '@/api/UserProgress';
 import { getUserNotes } from '@/api/Note';
 import { getTodaySchedules } from '@/api/Schedule';
 import Sidebar from '@/components/Sidebar.vue';
+import { useNotification } from '@/composables/useNotification';
 
 export default {
   name: 'Dashboard',
   components: {
     Sidebar
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -263,6 +273,7 @@ export default {
         return payload.id;
       } catch (error) {
         console.error('Error decoding token:', error);
+        this.showError('Error decoding authentication token');
         return null;
       }
     },
@@ -323,6 +334,7 @@ export default {
           }));
         } catch (scheduleError) {
           console.error('Error loading schedule data:', scheduleError);
+          this.showWarning('Could not load today\'s schedule');
           this.todayEvents = [];
         }
         
@@ -339,12 +351,14 @@ export default {
           }));
         } catch (notesError) {
           console.error('Error loading notes data:', notesError);
+          this.showWarning('Could not load recent notes');
           this.recentNotes = [];
         }
         
       } catch (error) {
         console.error('Error loading user data:', error);
         this.error = 'Failed to load user data';
+        this.showError('Failed to load user data');
         
         // If token is invalid, redirect to login
         if (error.message.includes('token') || error.response?.status === 401) {

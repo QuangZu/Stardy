@@ -197,11 +197,21 @@
 <script>
 import { getAccount } from '@/api/Account';
 import Sidebar from '@/components/Sidebar.vue';
+import { useNotification } from '@/composables/useNotification';
 
 export default {
   name: 'Exams',
   components: {
     Sidebar
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -241,6 +251,7 @@ export default {
         return payload.id;
       } catch (error) {
         console.error('Error decoding token:', error);
+        this.showError('Error decoding authentication token');
         return null;
       }
     },
@@ -411,6 +422,7 @@ export default {
       } catch (error) {
         console.error('Error loading exams data:', error);
         this.error = 'Failed to load exams data';
+        this.showError('Failed to load exams data');
         
         if (error.message.includes('token') || error.response?.status === 401) {
           localStorage.removeItem('token');
@@ -423,31 +435,31 @@ export default {
     
     startPractice(practice) {
       console.log('Starting practice:', practice.title);
-      alert(`Starting ${practice.title} practice session`);
+      this.showInfo(`Starting ${practice.title} practice session`);
     },
     
     startExam(exam) {
       if (!exam.available) {
-        alert('This exam is not available yet. Please complete the requirements first.');
+        this.showWarning('This exam is not available yet. Please complete the requirements first.');
         return;
       }
       console.log('Starting exam:', exam.title);
-      alert(`Starting exam: ${exam.title}`);
+      this.showSuccess(`Starting exam: ${exam.title}`);
     },
     
     viewExamDetails(exam) {
       console.log('Viewing exam details:', exam.title);
-      alert(`Viewing details for: ${exam.title}`);
+      this.showInfo(`Viewing details for: ${exam.title}`);
     },
     
     viewResultDetails(result) {
       console.log('Viewing result details:', result.examTitle);
-      alert(`Viewing detailed results for: ${result.examTitle}`);
+      this.showInfo(`Viewing detailed results for: ${result.examTitle}`);
     },
     
     retakeExam(result) {
       console.log('Retaking exam:', result.examTitle);
-      alert(`Retaking exam: ${result.examTitle}`);
+      this.showInfo(`Retaking exam: ${result.examTitle}`);
     },
     
     setReminder(upcoming) {

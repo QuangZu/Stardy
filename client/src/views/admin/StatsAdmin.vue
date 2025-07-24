@@ -197,13 +197,23 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
-import { getAdminStats } from '@/api/Stats.js'
+import { useNotification } from '@/composables/useNotification'
+import { getAdminStats } from '@/api/Statistic.js'
 
 export default {
   name: 'StatsAdmin',
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -225,6 +235,7 @@ export default {
         this.stats = await getAdminStats()
       } catch (error) {
         console.error('Error fetching stats:', error)
+        this.showError('Error', 'Failed to fetch statistics. Please try again.')
       }
     },
     logout() {

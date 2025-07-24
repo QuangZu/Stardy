@@ -140,12 +140,22 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
+import { useNotification } from '@/composables/useNotification'
 
 export default {
   name: 'SystemAdmin',
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -164,8 +174,10 @@ export default {
         // API call to update system settings would go here
         console.log('Updating system settings:', this.systemSettings)
         this.showSystemModal = false
+        this.showSuccess('Success', 'System settings updated successfully!')
       } catch (error) {
         console.error('Error updating system settings:', error)
+        this.showError('Error', 'Failed to update system settings.')
       }
     },
     logout() {

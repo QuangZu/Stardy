@@ -181,11 +181,21 @@
 <script>
 import { getAccount } from '@/api/Account';
 import Sidebar from '@/components/Sidebar.vue';
+import { useNotification } from '@/composables/useNotification';
 
 export default {
   name: 'Profile',
   components: {
     Sidebar
+  },
+  setup() {
+    const { showSuccess, showError, showInfo, showWarning } = useNotification()
+    return {
+      showSuccess,
+      showError,
+      showInfo,
+      showWarning
+    }
   },
   data() {
     return {
@@ -235,6 +245,7 @@ export default {
         return payload.id;
       } catch (error) {
         console.error('Error decoding token:', error);
+        this.showError('Error decoding authentication token');
         return null;
       }
     },
@@ -271,6 +282,7 @@ export default {
       } catch (error) {
         console.error('Error loading user data:', error);
         this.error = 'Failed to load profile data';
+        this.showError('Failed to load profile data');
         
         if (error.message.includes('token') || error.response?.status === 401) {
           localStorage.removeItem('token');
@@ -305,16 +317,16 @@ export default {
         // await updateAccount(this.userId, this.userProfile);
         
         this.editMode = false;
-        alert('Profile updated successfully!');
+        this.showSuccess('Profile updated successfully!');
       } catch (error) {
         console.error('Error saving profile:', error);
-        alert('Failed to update profile');
+        this.showError('Failed to update profile');
       }
     },
     
     async changePassword() {
       if (this.passwordForm.new !== this.passwordForm.confirm) {
-        alert('New passwords do not match');
+        this.showWarning('New passwords do not match');
         return;
       }
       
@@ -324,10 +336,10 @@ export default {
         
         this.showPasswordModal = false;
         this.passwordForm = { current: '', new: '', confirm: '' };
-        alert('Password changed successfully!');
+        this.showSuccess('Password changed successfully!');
       } catch (error) {
         console.error('Error changing password:', error);
-        alert('Failed to change password');
+        this.showError('Failed to change password');
       }
     },
     
