@@ -1,66 +1,19 @@
 const AI = require('../models/AIModel');
 const UserProgress = require('../models/UserProgressModel');
-const IntentParser = require('../ai/intentParser');
+const EnhancedStudyAssistant = require('../ai/enhancedStudyAssistant');
+const IntentParser = require('../ai/enhancedStudyAssistant');
 const RecommendationService = require('../ai/recommendService');
 const { authenticate } = require('../middlewares/auth');
 
-// Initialize AI services
+// Initialize enhanced AI services
+const studyAssistant = new EnhancedStudyAssistant();
 const intentParser = new IntentParser();
 const recommendationService = new RecommendationService();
 
-// Existing AI request logging functionality
-const getAllAIRequests = async (req, res) => {
+// Enhanced chatbot with comprehensive study assistance
+const enhancedChatbot = async (req, res) => {
     try {
-        const aiRequests = await AI.find().populate('userId', 'name email');
-        res.status(200).json(aiRequests);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const getAIRequestsByUser = async (req, res) => {
-    try {
-        const aiRequests = await AI.find({ userId: req.user.id }).populate('userId', 'name email');
-        res.status(200).json(aiRequests);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const createAIRequest = async (req, res) => {
-    try {
-        const { request, response } = req.body;
-        const userId = req.user.id;
-        
-        // Create new AI request log
-        const newAIRequest = new AI({
-            userId,
-            request,
-            response
-        });
-        
-        const savedAIRequest = await newAIRequest.save();
-        
-        // Update user progress - increment AI interactions
-        const userProgress = await UserProgress.findOne({ userId });
-        if (userProgress) {
-            userProgress.aiInteractions += 1;
-            await userProgress.save();
-            
-            // Check for AI interaction achievements
-            await checkAIInteractionAchievements(userId, userProgress.aiInteractions);
-        }
-        
-        res.status(201).json(savedAIRequest);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Chatbot
-const chatbot = async (req, res) => {
-    try {
-        const { message } = req.body;
+        const { message, context = {} } = req.body;
         const userId = req.user.id;
 
         if (!message || message.trim().length === 0) {
@@ -70,256 +23,430 @@ const chatbot = async (req, res) => {
             });
         }
 
-        // Parse user intent and generate response
-        const response = await intentParser.parseIntent(message, userId);
+        // Add request context (current page, subject, question, etc.)
+        const enhancedContext = {
+            ...context,
+            timestamp: new Date(),
+            userAgent: req.headers['user-agent'],
+            sessionId: req.sessionID
+        };
 
-        // Log the interaction
-        try {
-            await createAIRequest({
-                user: { id: userId },
-                body: { request: message, response: response.response }
-            }, { status: () => ({ json: () => {} }) });
-        } catch (logError) {
-            console.error('Error logging AI interaction:', logError);
-        }
+        // Process query with enhanced study assistant
+        const response = await studyAssistant.processStudentQuery(
+            message, 
+            userId, 
+            enhancedContext
+        );
 
-        // Add timestamp and user context
+        // Log the interaction with enhanced metadata
+        await logEnhancedInteraction(userId, message, response, enhancedContext);
+
+        // Prepare comprehensive response
         const chatResponse = {
             success: true,
             message: response.response,
-            intent: response.intent,
-            confidence: response.confidence,
+            type: response.type,
+            confidence: response.confidence || 0.8,
+            
+            // Enhanced response components
+            hints: response.hints || [],
+            relatedConcepts: response.relatedConcepts || [],
+            studySuggestions: response.studySuggestions || [],
+            keyPoints: response.keyPoints || [],
+            examples: response.examples || [],
+            
+            // System integration
+            actionLinks: response.actionLinks || [],
+            systemSuggestions: response.systemSuggestions || [],
             navigationLinks: response.navigationLinks || [],
-            suggestedActions: response.suggestedActions || [],
+            
+            // Learning support
+            nextSteps: response.nextSteps || [],
+            prerequisites: response.prerequisiteCheck || [],
+            milestones: response.milestones || [],
+            
+            // Metadata
             timestamp: new Date().toISOString(),
-            userId: userId
+            userId: userId,
+            conversationId: generateConversationId(userId, enhancedContext)
         };
 
         res.json(chatResponse);
 
     } catch (error) {
-        console.error('Chatbot error:', error);
+        console.error('Enhanced chatbot error:', error);
         res.status(500).json({
             success: false,
             error: 'Unable to process your message at this time',
-            fallbackMessage: 'I\'m sorry, I\'m having trouble understanding right now. Please try again later.'
+            fallbackResponse: await studyAssistant.generateFallbackResponse(
+                req.body.message || '', 
+                req.user.id
+            )
         });
     }
 };
 
-// Get personalized learning recommendations
-const getRecommendations = async (req, res) => {
+// Question-specific help endpoint
+const getQuestionHelp = async (req, res) => {
     try {
+        const { questionId, userQuery, currentAnswer } = req.body;
         const userId = req.user.id;
-        const { context, subject } = req.query;
 
-        const requestContext = {
-            page: context || 'general',
-            currentSubject: subject
+        const context = {
+            currentQuestion: questionId,
+            userAnswer: currentAnswer,
+            requestType: 'question_help'
         };
 
-        const recommendations = await recommendationService.getPersonalizedRecommendations(
-            userId, 
-            requestContext
+        const help = await studyAssistant.handleQuestionHelp(
+            userQuery || "Help me understand this question",
+            await studyAssistant.getEnhancedUserContext(userId),
+            context
         );
 
         res.json({
             success: true,
-            ...recommendations,
+            ...help,
+            questionId,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('Recommendations error:', error);
+        console.error('Question help error:', error);
         res.status(500).json({
             success: false,
-            error: 'Unable to generate recommendations at this time',
-            recommendations: recommendationService.getFallbackRecommendations()
+            error: 'Unable to provide question help at this time'
         });
     }
 };
 
-// Get exam-specific recommendations for the learning page
-const getExamRecommendations = async (req, res) => {
+// Concept explanation endpoint
+const explainConcept = async (req, res) => {
     try {
+        const { concept, subject, difficulty } = req.body;
         const userId = req.user.id;
-        const { subject } = req.query;
 
-        const recommendations = await recommendationService.getExamRecommendations(
-            userId, 
-            subject
+        const context = {
+            subject,
+            difficulty,
+            requestType: 'concept_explanation'
+        };
+
+        const explanation = await studyAssistant.handleConceptExplanation(
+            `Explain ${concept}`,
+            await studyAssistant.getEnhancedUserContext(userId),
+            context
         );
 
         res.json({
             success: true,
-            ...recommendations,
-            timestamp: new Date().toISOString(),
-            context: 'exam_preparation'
-        });
-
-    } catch (error) {
-        console.error('Exam recommendations error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Unable to generate exam recommendations',
-            recommendations: recommendationService.getFallbackRecommendations()
-        });
-    }
-};
-
-// Get contextual help based on current user state
-const getContextualHelp = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { intent, page } = req.query;
-
-        const helpResponse = await intentParser.getContextualHelp(intent || 'general', userId);
-
-        res.json({
-            success: true,
-            help: helpResponse,
-            intent: intent || 'general',
-            page: page || 'unknown',
+            ...explanation,
+            concept,
+            subject,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('Contextual help error:', error);
+        console.error('Concept explanation error:', error);
         res.status(500).json({
             success: false,
-            error: 'Unable to provide help at this time',
-            help: 'I\'m here to help! You can ask me about navigation, learning resources, or your progress.'
+            error: 'Unable to explain concept at this time'
         });
     }
 };
 
-// Get user analytics for AI services
-const getUserAnalytics = async (req, res) => {
+// Personalized study plan generation
+const generateStudyPlan = async (req, res) => {
     try {
+        const { goals, timeAvailable, subjects, deadline } = req.body;
         const userId = req.user.id;
 
-        const analytics = await recommendationService.getUserAnalytics(userId);
+        const planQuery = `Create a study plan for: ${goals}. Available time: ${timeAvailable}. Subjects: ${subjects?.join(', ')}. Deadline: ${deadline}`;
+
+        const context = {
+            goals,
+            timeAvailable,
+            subjects,
+            deadline,
+            requestType: 'study_planning'
+        };
+
+        const studyPlan = await studyAssistant.handleStudyPlanning(
+            planQuery,
+            await studyAssistant.getEnhancedUserContext(userId),
+            context
+        );
 
         res.json({
             success: true,
-            analytics,
+            ...studyPlan,
+            planMetadata: {
+                goals,
+                timeAvailable,
+                subjects,
+                deadline,
+                createdAt: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Study plan generation error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unable to generate study plan at this time'
+        });
+    }
+};
+
+// Progress analysis and insights
+const analyzeProgress = async (req, res) => {
+    try {
+        const { timeframe = 'week', subjects = [] } = req.query;
+        const userId = req.user.id;
+
+        const analysisQuery = `Analyze my progress over the last ${timeframe}${subjects.length ? ` in ${subjects.join(', ')}` : ''}`;
+
+        const context = {
+            timeframe,
+            subjects,
+            requestType: 'progress_inquiry'
+        };
+
+        const analysis = await studyAssistant.handleProgressInquiry(
+            analysisQuery,
+            await studyAssistant.getEnhancedUserContext(userId),
+            context
+        );
+
+        res.json({
+            success: true,
+            ...analysis,
+            analysisMetadata: {
+                timeframe,
+                subjects,
+                analyzedAt: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Progress analysis error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unable to analyze progress at this time'
+        });
+    }
+};
+
+// Smart exam preparation
+const prepareForExam = async (req, res) => {
+    try {
+        const { examId, subject, timeUntilExam, currentPreparation } = req.body;
+        const userId = req.user.id;
+
+        const prepQuery = `Help me prepare for my ${subject} exam in ${timeUntilExam}. Current preparation: ${currentPreparation}`;
+
+        const context = {
+            examId,
+            subject,
+            timeUntilExam,
+            currentPreparation,
+            requestType: 'exam_preparation'
+        };
+
+        const preparation = await studyAssistant.handleExamPreparation(
+            prepQuery,
+            await studyAssistant.getEnhancedUserContext(userId),
+            context
+        );
+
+        res.json({
+            success: true,
+            ...preparation,
+            examMetadata: {
+                examId,
+                subject,
+                timeUntilExam,
+                preparedAt: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Exam preparation error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Unable to prepare exam strategy at this time'
+        });
+    }
+};
+
+// Learning analytics and insights
+const getLearningInsights = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userData = await studyAssistant.getEnhancedUserContext(userId);
+
+        const insights = {
+            learningProfile: userData.learningProfile,
+            performanceTrends: userData.performanceTrends,
+            currentWeaknesses: userData.currentWeaknesses,
+            studyGoals: userData.studyGoals,
+            recommendations: await recommendationService.getPersonalizedRecommendations(userId),
+            sessionData: userData.currentSession
+        };
+
+        res.json({
+            success: true,
+            insights,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('User analytics error:', error);
+        console.error('Learning insights error:', error);
         res.status(500).json({
             success: false,
-            error: 'Unable to retrieve analytics at this time'
+            error: 'Unable to generate learning insights at this time'
         });
     }
 };
 
-// Health check for AI services
-const healthCheck = async (req, res) => {
+// System health and capabilities check
+const getSystemCapabilities = async (req, res) => {
     try {
-        // Test both services
-        const testUserId = req.user?.id || 'test';
-        
-        // Quick test of intent parser
-        const intentTest = await intentParser.parseIntent('hello', testUserId);
-        
-        // Quick test of recommendation service
-        const recTest = await recommendationService.getFallbackRecommendations();
-
-        res.json({
-            success: true,
-            status: 'healthy',
-            services: {
-                intentParser: intentTest ? 'operational' : 'error',
-                recommendationService: recTest ? 'operational' : 'error'
+        const capabilities = {
+            studyAssistance: {
+                questionHelp: true,
+                conceptExplanation: true,
+                studyPlanning: true,
+                progressAnalysis: true,
+                examPreparation: true,
+                learningInsights: true
             },
+            systemIntegration: {
+                navigation: true,
+                dataAccess: true,
+                userContext: true,
+                realTimeHelp: true
+            },
+            aiFeatures: {
+                conversationMemory: true,
+                personalizedResponses: true,
+                contextAwareness: true,
+                multiTurnConversations: true
+            }
+        };
+
+        // Test AI service availability
+        const healthCheck = await studyAssistant.processStudentQuery(
+            "health check",
+            req.user?.id || 'test',
+            { test: true }
+        );
+
+        res.json({
+            success: true,
+            capabilities,
+            status: healthCheck ? 'operational' : 'degraded',
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('AI health check error:', error);
+        console.error('System capabilities error:', error);
         res.status(500).json({
             success: false,
-            status: 'unhealthy',
-            error: error.message,
-            timestamp: new Date().toISOString()
+            status: 'error',
+            error: error.message
         });
     }
 };
 
-// Helper function to check for AI interaction achievements
-const checkAIInteractionAchievements = async (userId, interactionCount) => {
+// Helper functions
+async function logEnhancedInteraction(userId, message, response, context) {
     try {
-        // Milestone interactions that should trigger achievements
-        const interactionMilestones = [1, 10, 50, 100, 500];
-        
-        // Check if current interaction count matches any milestone
-        const milestone = interactionMilestones.find(m => m === interactionCount);
-        if (!milestone) return;
-        
-        const Achievement = require('../models/AchievementModel');
-        const Account = require('../models/AccountModel');
-        const user = await Account.findById(userId);
-        
-        // Find AI interaction achievement for this milestone
-        const achievement = await Achievement.findOne({
-            'requirements.type': 'aiInteraction',
-            'requirements.count': milestone
+        const enhancedLog = new AI({
+            userId,
+            request: message,
+            response: response.response || JSON.stringify(response),
+            metadata: {
+                responseType: response.type,
+                confidence: response.confidence,
+                context: context,
+                timestamp: new Date()
+            }
         });
-        
-        if (achievement && !user.achievements.includes(achievement._id)) {
-            // Unlock achievement
-            user.achievements.push(achievement._id);
-            user.experience += achievement.experiencePoints;
-            await user.save();
-            
-            // Check if user leveled up
-            await checkLevelUp(user);
-        }
-    } catch (error) {
-        console.error("Error checking AI interaction achievements:", error);
-    }
-};
 
-// Helper function to check if user leveled up
-const checkLevelUp = async (user) => {
-    try {
-        const Level = require('../models/LevelModel');
-        
-        // Get the next level
-        const nextLevel = await Level.findOne({ level: user.currentLevel + 1 });
-        
-        // If there's no next level, user is at max level
-        if (!nextLevel) {
-            return { leveledUp: false };
-        }
-        
-        // Check if user has enough XP to level up
-        if (user.experience >= nextLevel.experienceRequired) {
-            user.currentLevel += 1;
-            await user.save();
-            return { leveledUp: true, newLevel: user.currentLevel };
-        }
-        
-        return { leveledUp: false };
-    } catch (error) {
-        console.error("Error checking level up:", error);
-        return { leveledUp: false };
-    }
-};
+        await enhancedLog.save();
 
+        // Update user progress with AI interaction
+        const userProgress = await UserProgress.findOne({ userId });
+        if (userProgress) {
+            userProgress.aiInteractions += 1;
+            userProgress.lastAIInteraction = new Date();
+            await userProgress.save();
+        }
+
+    } catch (error) {
+        console.error('Error logging enhanced interaction:', error);
+    }
+}
+
+function generateConversationId(userId, context) {
+    return `${userId}_${context.sessionId || 'session'}_${Date.now()}`;
+}
+
+// Export all functions
 module.exports = {
-    // Existing functionality
-    getAllAIRequests,
-    getAIRequestsByUser,
-    createAIRequest,
+    // Enhanced chatbot functions
+    enhancedChatbot,
+    getQuestionHelp,
+    explainConcept,
+    generateStudyPlan,
+    analyzeProgress,
+    prepareForExam,
+    getLearningInsights,
+    getSystemCapabilities,
     
-    // New AI functionality
-    chatbot,
-    getRecommendations,
-    getExamRecommendations,
-    getContextualHelp,
-    getUserAnalytics,
-    healthCheck
+    // Existing functions (maintain backward compatibility)
+    chatbot: enhancedChatbot, // Alias for backward compatibility
+    getRecommendations: async (req, res) => {
+        // Wrap existing recommendation service
+        try {
+            const userId = req.user.id;
+            const { context, subject } = req.query;
+            
+            const recommendations = await recommendationService.getPersonalizedRecommendations(
+                userId, 
+                { page: context, currentSubject: subject }
+            );
+            
+            res.json({
+                success: true,
+                ...recommendations,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: 'Unable to generate recommendations'
+            });
+        }
+    },
+    
+    // Keep existing functions for backward compatibility
+    getAllAIRequests: async (req, res) => {
+        try {
+            const aiRequests = await AI.find().populate('userId', 'username email');
+            res.status(200).json(aiRequests);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    },
+    
+    getAIRequestsByUser: async (req, res) => {
+        try {
+            const aiRequests = await AI.find({ userId: req.user.id });
+            res.status(200).json(aiRequests);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 };

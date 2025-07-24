@@ -10,36 +10,30 @@
     />
     <main class="admin-content">
       <!-- Content Area -->
-    <div class="space-y-6">
+    <div class="p-6">
       <!-- Header Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <div>
-            <h2 class="text-section-header text-gray-900 dark:text-white">Subjects Management</h2>
-            <p class="text-body text-gray-600 dark:text-gray-400 mt-1">Manage educational subjects and categories</p>
-          </div>
-          <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-            <!-- Search Bar -->
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-search text-gray-400 text-sm"></i>
-              </div>
-              <input 
-                v-model="searchQuery" 
-                type="text" 
-                placeholder="Search subjects..."
-                class="w-full sm:w-64 pl-10 pr-4 py-2 text-body border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-            </div>
-            <!-- Add Subject Button -->
-            <button 
-              @click="showCreateSubjectModal = true" 
-              class="btn-primary inline-flex items-center"
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-section-header text-gray-900 dark:text-white">Subjects Management</h1>
+          <p class="text-body text-gray-600 dark:text-gray-300 mt-1">Manage educational subjects and categories</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search subjects..."
+              class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-body dark:bg-gray-700 dark:text-white"
             >
-              <i class="fas fa-plus mr-2"></i>
-              Add Subject
-            </button>
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
           </div>
+          <button
+            @click="showCreateSubjectModal = true"
+            class="btn-primary flex items-center gap-2"
+          >
+            <i class="fas fa-plus"></i>
+            Add Subject
+          </button>
         </div>
       </div>
 
@@ -58,45 +52,51 @@
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="subject in filteredSubjects" :key="subject._id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                <td class="px-6 py-4 whitespace-nowrap text-body font-mono text-gray-500 dark:text-gray-400">
+              <tr v-for="subject in filteredSubjects" :key="subject._id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-body font-mono text-gray-900 dark:text-gray-100">
                   {{ subject._id ? subject._id.slice(-6) : 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-body font-medium text-gray-900 dark:text-white">{{ subject.name || 'N/A' }}</div>
+                  <div class="flex items-center">
+                    <div>
+                      <div class="text-body font-medium text-gray-900 dark:text-white">{{ subject.name || 'N/A' }}</div>
+                    </div>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                    {{ subject.category || 'N/A' }}
+                  <span class="inline-flex px-2 py-1 text-small font-semibold rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+                    {{ (subject.category || 'N/A').toUpperCase() }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <i :class="subject.icon || 'fas fa-book'" class="text-gray-600 dark:text-gray-400"></i>
+                  <i :class="subject.icon || 'fas fa-book'" class="text-gray-600 dark:text-gray-400 text-lg"></i>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-body text-gray-500 dark:text-gray-400">
                   {{ formatDate(subject.createdAt) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-body font-medium">
                   <div class="flex space-x-2">
-                    <button 
-                      @click="editSubject(subject)" 
-                      class="inline-flex items-center p-2 text-primary hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200"
+                    <button
+                      @click="editSubject(subject)"
+                      class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors duration-150"
                       title="Edit Subject"
                     >
-                      <i class="fas fa-edit text-sm"></i>
+                      <i class="fas fa-edit mr-1"></i>
+                      Edit
                     </button>
-                    <button 
-                      @click="deleteSubject(subject._id)" 
-                      class="inline-flex items-center p-2 text-error hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+                    <button
+                      @click="deleteSubject(subject._id)"
+                      class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-150"
                       title="Delete Subject"
                     >
-                      <i class="fas fa-trash text-sm"></i>
+                      <i class="fas fa-trash mr-1"></i>
+                      Delete
                     </button>
                   </div>
                 </td>
               </tr>
               <tr v-if="filteredSubjects.length === 0">
-                <td colspan="7" class="px-6 py-12 text-center">
+                <td colspan="6" class="px-6 py-12 text-center">
                   <div class="flex flex-col items-center">
                     <i class="fas fa-book text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
                     <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No subjects found</p>
@@ -115,26 +115,25 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Create New Subject</h3>
-          <button @click="showCreateSubjectModal = false" class="modal-close">
+          <button @click="showCreateSubjectModal = false" class="close-btn">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createSubject">
             <div class="form-group">
-              <label for="subjectName">Subject Name</label>
-              <input 
-                id="subjectName"
-                v-model="newSubject.name" 
-                type="text" 
+              <label>Subject Name</label>
+              <input
+                v-model="newSubject.name"
+                type="text"
                 required
                 class="form-input"
                 placeholder="Enter subject name"
               >
             </div>
             <div class="form-group">
-              <label for="subjectCategory">Category</label>
-              <select id="subjectCategory" v-model="newSubject.category" class="form-input" required>
+              <label>Category</label>
+              <select v-model="newSubject.category" class="form-select" required>
                 <option value="">Select a category</option>
                 <option value="primary">Primary</option>
                 <option value="secondary">Secondary</option>
@@ -144,11 +143,10 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="subjectIcon">Icon (Font Awesome class)</label>
-              <input 
-                id="subjectIcon"
-                v-model="newSubject.icon" 
-                type="text" 
+              <label>Icon (Font Awesome class)</label>
+              <input
+                v-model="newSubject.icon"
+                type="text"
                 class="form-input"
                 placeholder="e.g., fas fa-code"
               >
@@ -156,11 +154,65 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" @click="showCreateSubjectModal = false" class="btn-secondary">
+          <button type="button" @click="showCreateSubjectModal = false" class="btn-cancel">
             Cancel
           </button>
-          <button type="submit" @click="createSubject" class="btn-primary">
+          <button type="submit" @click="createSubject" class="btn-save">
             Create Subject
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Subject Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Edit Subject</h3>
+          <button @click="closeEditModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveSubject">
+            <div class="form-group">
+              <label>Subject Name</label>
+              <input
+                v-model="editingSubject.name"
+                type="text"
+                required
+                class="form-input"
+                placeholder="Enter subject name"
+              >
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select v-model="editingSubject.category" class="form-select" required>
+                <option value="">Select a category</option>
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
+                <option value="senior secondary">Senior Secondary</option>
+                <option value="university">University</option>
+                <option value="special">Special</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Icon (Font Awesome class)</label>
+              <input
+                v-model="editingSubject.icon"
+                type="text"
+                class="form-input"
+                placeholder="e.g., fas fa-code"
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" @click="closeEditModal" class="btn-cancel">
+            Cancel
+          </button>
+          <button type="submit" @click="saveSubject" class="btn-save">
+            Update Subject
           </button>
         </div>
       </div>
@@ -172,7 +224,7 @@
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
-import { getAllSubjects, createSubject, deleteSubject } from '@/api/Subject.js'
+import { getAllSubjects, createSubject, updateSubject, deleteSubject } from '@/api/Subject.js'
 
 export default {
   name: 'SubjectsAdmin',
@@ -186,29 +238,22 @@ export default {
       subjects: [],
       searchQuery: '',
       showCreateSubjectModal: false,
+      showEditModal: false,
+      editingSubject: {},
       newSubject: {
         name: '',
         category: '',
         icon: 'fas fa-book'
       },
-      // Categories matching the backend enum
-      categories: [
-        { value: 'primary', label: 'Primary' },
-        { value: 'secondary', label: 'Secondary' },
-        { value: 'senior secondary', label: 'Senior Secondary' },
-        { value: 'university', label: 'University' },
-        { value: 'special', label: 'Special' }
-      ]
+      loading: false
     }
   },
   computed: {
     filteredSubjects() {
-      if (!this.subjects || !Array.isArray(this.subjects)) return []
-      if (!this.searchQuery) return this.subjects
-      return this.subjects.filter(subject => 
-        subject && subject.name && subject.category &&
-        (subject.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        subject.category.toLowerCase().includes(this.searchQuery.toLowerCase()))
+      if (!this.searchQuery) return this.subjects || []
+      return (this.subjects || []).filter(subject => 
+        (subject.name || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (subject.category || '').toLowerCase().includes(this.searchQuery.toLowerCase())
       )
     }
   },
@@ -218,30 +263,39 @@ export default {
   methods: {
     async fetchSubjects() {
       try {
-        this.subjects = await getAllSubjects()
+        this.loading = true
+        const response = await getAllSubjects()
+        // Handle the API response properly - extract data array
+        this.subjects = response.data || response || []
       } catch (error) {
         console.error('Error fetching subjects:', error)
+        this.subjects = []
+      } finally {
+        this.loading = false
       }
     },
     async createSubject() {
-      console.log('Creating subject with data:', this.newSubject); // Add this line
       try {
         await createSubject(this.newSubject)
         await this.fetchSubjects()
         this.showCreateSubjectModal = false
-        this.newSubject = { 
-          name: '', 
-          category: '', 
-          icon: 'fas fa-book'
-        }
+        this.newSubject = { name: '', category: '', icon: 'fas fa-book' }
       } catch (error) {
         console.error('Error creating subject:', error)
-        alert('Error creating subject: ' + error.message) // Add this line for user feedback
       }
     },
     editSubject(subject) {
-      // Implementation for edit functionality
-      console.log('Edit subject:', subject)
+      this.editingSubject = { ...subject }
+      this.showEditModal = true
+    },
+    async saveSubject() {
+      try {
+        await updateSubject(this.editingSubject._id, this.editingSubject)
+        await this.fetchSubjects()
+        this.closeEditModal()
+      } catch (error) {
+        console.error('Error updating subject:', error)
+      }
     },
     async deleteSubject(subjectId) {
       if (confirm('Are you sure you want to delete this subject?')) {
@@ -252,6 +306,10 @@ export default {
           console.error('Error deleting subject:', error)
         }
       }
+    },
+    closeEditModal() {
+      this.showEditModal = false
+      this.editingSubject = {}
     },
     formatDate(date) {
       return new Date(date).toLocaleDateString()
