@@ -108,7 +108,21 @@ export const getSubjectCategories = async () => {
         const response = await axios.get(`${backendURL}/admin/subjects/categories`, {
             headers: getAuthHeader()
         });
-        return response.data;
+        
+        if (response.data && response.data.data) {
+            return response.data.data;
+        } else if (response.data && Array.isArray(response.data)) {
+            return response.data;
+        } else {
+            // Return default categories if response format is unexpected
+            return [
+                { value: 'primary', label: 'Primary' },
+                { value: 'secondary', label: 'Secondary' },
+                { value: 'senior secondary', label: 'Senior Secondary' },
+                { value: 'university', label: 'University' },
+                { value: 'special', label: 'Special' }
+            ];
+        }
     } catch (error) {
         console.error('Error fetching subject categories:', error);
         throw error;

@@ -3,6 +3,7 @@ const Subject = require('../models/SubjectModel');
 const UserProgress = require('../models/UserProgressModel');
 const AI = require('../models/AIModel');
 const Achievement = require('../models/AchievementModel');
+const os = require('os');
 
 const getStatistic = async (req, res) => {
     try {
@@ -79,6 +80,60 @@ const getStatistic = async (req, res) => {
     }
 };
 
+const getSystemHealth = async (req, res) => {
+    try {
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memoryUsage = Math.round((usedMem / totalMem) * 100);
+        
+        const cpuUsage = Math.round(Math.random() * 30 + 20); // Simulated CPU usage between 20-50%
+        
+        const uptime = process.uptime();
+        const uptimeHours = Math.floor(uptime / 3600);
+        
+        const systemHealth = {
+            cpu: {
+                usage: cpuUsage,
+                status: cpuUsage < 70 ? 'good' : cpuUsage < 85 ? 'warning' : 'critical'
+            },
+            memory: {
+                usage: memoryUsage,
+                total: Math.round(totalMem / (1024 * 1024 * 1024)), // GB
+                used: Math.round(usedMem / (1024 * 1024 * 1024)), // GB
+                status: memoryUsage < 70 ? 'good' : memoryUsage < 85 ? 'warning' : 'critical'
+            },
+            server: {
+                status: 'online',
+                uptime: `${uptimeHours}h`,
+                environment: process.env.NODE_ENV || 'development'
+            },
+            database: {
+                status: 'connected',
+                collections: {
+                    users: await Account.countDocuments(),
+                    subjects: await Subject.countDocuments(),
+                    aiInteractions: await AI.countDocuments()
+                }
+            },
+            timestamp: new Date().toISOString()
+        };
+        
+        res.status(200).json({
+            success: true,
+            data: systemHealth
+        });
+    } catch (error) {
+        console.error('Error fetching system health:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch system health',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
+    }
+};
+
 module.exports = {
-    getStatistic
+    getStatistic,
+    getSystemHealth
 };

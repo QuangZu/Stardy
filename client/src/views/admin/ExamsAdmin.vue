@@ -318,10 +318,12 @@ export default {
     },
     async fetchSubjects() {
       try {
-        this.subjects = await getAllSubjects()
+        const response = await getAllSubjects()
+        this.subjects = response.data || response || []
       } catch (error) {
         console.error('Error fetching subjects:', error)
         this.showWarning('Warning', 'Failed to fetch subjects. Some features may be limited.')
+        this.subjects = []
       }
     },
     getSubjectName(subjectId) {

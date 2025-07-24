@@ -134,7 +134,7 @@
 </template>
 
 <script>
-import { login } from '@/api/Account'
+import { login } from '@/api/Auth'
 import Navigation from '@/components/Navigation.vue'
 import { useNotification } from '@/composables/useNotification'
 

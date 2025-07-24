@@ -65,7 +65,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex px-2 py-1 text-small font-semibold rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
-                    {{ (subject.category || 'N/A').toUpperCase() }}
+                    {{ getCategoryLabel(subject.category) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -133,18 +133,17 @@
             </div>
             <div class="form-group">
               <label>Category</label>
-              <!-- Create Subject Modal -->
-              <select v-model="newSubject.category" class="form-select" required>
+              <select 
+                v-model="newSubject.category" 
+                class="form-input" 
+                required
+              >
                 <option value="">Select a category</option>
-                <option v-for="category in categories" :key="category.value" :value="category.value">
-                  {{ category.label }}
-                </option>
-              </select>
-              
-              <!-- Edit Subject Modal -->
-              <select v-model="editingSubject.category" class="form-select" required>
-                <option value="">Select a category</option>
-                <option v-for="category in categories" :key="category.value" :value="category.value">
+                <option 
+                  v-for="category in categories" 
+                  :key="category.value" 
+                  :value="category.value"
+                >
                   {{ category.label }}
                 </option>
               </select>
@@ -194,13 +193,19 @@
             </div>
             <div class="form-group">
               <label>Category</label>
-              <select v-model="editingSubject.category" class="form-select" required>
+              <select 
+                v-model="editingSubject.category" 
+                class="form-input" 
+                required
+              >
                 <option value="">Select a category</option>
-                <option value="primary">Primary</option>
-                <option value="secondary">Secondary</option>
-                <option value="senior secondary">Senior Secondary</option>
-                <option value="university">University</option>
-                <option value="special">Special</option>
+                <option 
+                  v-for="category in categories" 
+                  :key="category.value" 
+                  :value="category.value"
+                >
+                  {{ category.label }}
+                </option>
               </select>
             </div>
             <div class="form-group">
@@ -295,10 +300,26 @@ export default {
     },
     async fetchCategories() {
       try {
-        this.categories = await getSubjectCategories()
+        const response = await getSubjectCategories()
+        
+        // Handle different response formats
+        if (Array.isArray(response)) {
+          this.categories = response
+        } else if (response && response.data) {
+          this.categories = Array.isArray(response.data) ? response.data : []
+        } else {
+          throw new Error('Invalid categories response format')
+        }
+        
+        // Validate categories structure
+        if (this.categories.length === 0 || !this.categories[0].value) {
+          throw new Error('Categories data is empty or malformed')
+        }
+        
       } catch (error) {
         console.error('Error fetching categories:', error)
         this.showWarning('Warning', 'Failed to fetch categories. Using default categories.')
+        
         // Fallback to default categories
         this.categories = [
           { value: 'primary', label: 'Primary' },
@@ -309,8 +330,24 @@ export default {
         ]
       }
     },
+    getCategoryLabel(categoryValue) {
+      if (!categoryValue) return 'N/A'
+      
+      const category = this.categories.find(cat => cat.value === categoryValue)
+      return category ? category.label : categoryValue.toUpperCase()
+    },
     async createSubject() {
       try {
+        // Validate form data
+        if (!this.newSubject.name.trim()) {
+          this.showError('Error', 'Subject name is required.')
+          return
+        }
+        if (!this.newSubject.category) {
+          this.showError('Error', 'Please select a category.')
+          return
+        }
+        
         await createSubject(this.newSubject)
         await this.fetchSubjects()
         this.showCreateSubjectModal = false
@@ -327,6 +364,16 @@ export default {
     },
     async saveSubject() {
       try {
+        // Validate form data
+        if (!this.editingSubject.name.trim()) {
+          this.showError('Error', 'Subject name is required.')
+          return
+        }
+        if (!this.editingSubject.category) {
+          this.showError('Error', 'Please select a category.')
+          return
+        }
+        
         await updateSubject(this.editingSubject._id, this.editingSubject)
         await this.fetchSubjects()
         this.closeEditModal()
@@ -336,10 +383,7 @@ export default {
         this.showError('Error', 'Failed to update subject. Please try again.')
       }
     },
-    async deleteSubject(subject) {
-      // Extract ID from subject object if it's an object, otherwise use as ID
-      const subjectId = typeof subject === 'object' ? subject._id : subject
-      
+    async deleteSubject(subjectId) {
       if (confirm('Are you sure you want to delete this subject?')) {
         try {
           await deleteSubject(subjectId)

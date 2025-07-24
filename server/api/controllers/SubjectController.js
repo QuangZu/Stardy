@@ -124,13 +124,9 @@ const updateSubject = async (req, res) => {
 const deleteSubject = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedSubject = await Subject.findByIdAndUpdate(
-            id,
-            { isActive: false, updatedAt: new Date() },
-            { new: true }
-        );
+        const deletedSubject = await Subject.findByIdAndDelete(id);
 
-        if (!updatedSubject) {
+        if (!deletedSubject) {
             return res.status(404).json({
                 success: false,
                 message: 'Subject not found'
@@ -139,7 +135,8 @@ const deleteSubject = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Subject deleted successfully'
+            message: 'Subject deleted successfully',
+            data: deletedSubject
         });
     } catch (error) {
         console.error('Error deleting subject:', error);
@@ -154,7 +151,7 @@ const deleteSubject = async (req, res) => {
 const searchSubjects = async (req, res) => {
     try {
         const { q, category, difficulty } = req.query;
-        let filter = { isActive: true };
+        let filter = {};
         
         if (q) {
             filter.$or = [
@@ -193,6 +190,17 @@ const getSubjectCategories = async (req, res) => {
             label: category.charAt(0).toUpperCase() + category.slice(1)
         }));
         
+        // If no categories found, return default categories
+        if (formattedCategories.length === 0) {
+            formattedCategories = [
+                { value: 'primary', label: 'Primary' },
+                { value: 'secondary', label: 'Secondary' },
+                { value: 'senior secondary', label: 'Senior Secondary' },
+                { value: 'university', label: 'University' },
+                { value: 'special', label: 'Special' }
+            ];
+        }
+        
         res.status(200).json({
             success: true,
             data: formattedCategories
@@ -209,7 +217,6 @@ const getSubjectCategories = async (req, res) => {
 
 module.exports = {
     getAllSubjects,
-    getFeaturedSubjects,
     getSubjectsByCategory,
     getSubjectById,
     createSubject,

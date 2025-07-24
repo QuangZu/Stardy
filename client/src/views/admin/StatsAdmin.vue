@@ -232,7 +232,13 @@ export default {
   methods: {
     async fetchStats() {
       try {
-        this.stats = await getAdminStats()
+        const response = await getAdminStats()
+        this.stats = response.data || response || {
+          totalUsers: 0,
+          totalAdmins: 0,
+          avgLevel: 0,
+          avgStreak: 0
+        }
       } catch (error) {
         console.error('Error fetching stats:', error)
         this.showError('Error', 'Failed to fetch statistics. Please try again.')
