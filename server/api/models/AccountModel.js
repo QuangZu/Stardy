@@ -30,7 +30,7 @@ const accountSchema = new mongoose.Schema(
         
         avatar: {
             type: String,
-            default: 'client\src\assets\avatar\astronaunt.jpg'
+            default: 'client/src/assets/avatar/astronaunt.jpg'
         },
         
         currentLevel: {

@@ -7,62 +7,22 @@ const getAuthHeader = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const getAllSubjects = async (filters = {}) => {
+export const getAllSubjects = async () => {
     try {
-        const params = new URLSearchParams();
-        if (filters.category) params.append('category', filters.category);
-        if (filters.difficulty) params.append('difficulty', filters.difficulty);
-        if (filters.featured) params.append('featured', filters.featured);
-        
-        const response = await axios.get(`${backendURL}/subjects?${params.toString()}`);
+        const response = await axios.get(`${backendURL}/subjects`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching subjects:', error);
+        console.error('Error fetching all subjects:', error);
         throw error;
     }
 };
 
-export const getFeaturedSubjects = async () => {
-    try {
-        const response = await axios.get(`${backendURL}/subjects/featured`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching featured subjects:', error);
-        throw error;
-    }
-};
-
-export const getSubjectsByCategory = async (category) => {
-    try {
-        const response = await axios.get(`${backendURL}/subjects/category/${category}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching subjects by category:', error);
-        throw error;
-    }
-};
-
-export const getSubjectById = async (id) => {
+export const getSubject = async (id) => {
     try {
         const response = await axios.get(`${backendURL}/subjects/${id}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching subject:', error);
-        throw error;
-    }
-};
-
-export const searchSubjects = async (query, filters = {}) => {
-    try {
-        const params = new URLSearchParams();
-        if (query) params.append('q', query);
-        if (filters.category) params.append('category', filters.category);
-        if (filters.difficulty) params.append('difficulty', filters.difficulty);
-        
-        const response = await axios.get(`${backendURL}/subjects/search?${params.toString()}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error searching subjects:', error);
         throw error;
     }
 };
@@ -103,28 +63,12 @@ export const deleteSubject = async (id) => {
     }
 };
 
-export const getSubjectCategories = async () => {
+export const getSubjectsByCategory = async (category) => {
     try {
-        const response = await axios.get(`${backendURL}/admin/subjects/categories`, {
-            headers: getAuthHeader()
-        });
-        
-        if (response.data && response.data.data) {
-            return response.data.data;
-        } else if (response.data && Array.isArray(response.data)) {
-            return response.data;
-        } else {
-            // Return default categories if response format is unexpected
-            return [
-                { value: 'primary', label: 'Primary' },
-                { value: 'secondary', label: 'Secondary' },
-                { value: 'senior secondary', label: 'Senior Secondary' },
-                { value: 'university', label: 'University' },
-                { value: 'special', label: 'Special' }
-            ];
-        }
+        const response = await axios.get(`${backendURL}/subjects/category/${category}`);
+        return response.data;
     } catch (error) {
-        console.error('Error fetching subject categories:', error);
+        console.error('Error fetching subjects by category:', error);
         throw error;
     }
 };

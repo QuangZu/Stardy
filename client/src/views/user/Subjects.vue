@@ -826,7 +826,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  color: white;
+  color: black;
   font-size: 0.9rem;
   width: 250px;
 }

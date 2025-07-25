@@ -88,7 +88,7 @@ export default {
       userId: null,
       loading: false,
       error: null,
-      defaultAvatar: require('@/assets/avatar/astronaunt.jpg'),
+      defaultAvatar: ('@/assets/avatar/astronaunt.jpg'),
       userStats: {
         experience: 0,
         completedQuestions: 0,
@@ -103,9 +103,6 @@ export default {
     currentRoute() {
       return this.$route.name?.toLowerCase() || this.$route.path.slice(1);
     }
-  },
-  async mounted() {
-    await this.loadUserData();
   },
   methods: {
     handleLogout() {

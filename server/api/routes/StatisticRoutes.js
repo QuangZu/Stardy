@@ -1,10 +1,10 @@
 const StatisticController = require('../controllers/StatisticController');
-const { authenticate, requireAdmin } = require('../middlewares/auth');
+const { authenticate, requireRole } = require('../middlewares/auth');
 
 const StatisticRouter = (app) => {
     app.route('/admin/stats')
-        .get(authenticate, requireAdmin, StatisticController.getStatistic);
+        .get(authenticate, requireRole('admin'), StatisticController.getStatistic);
     app.route('/admin/system-health')
-        .get(authenticate, requireAdmin, StatisticController.getSystemHealth);
+        .get(authenticate, requireRole('admin'), StatisticController.getSystemHealth);
 }
 module.exports = StatisticRouter;

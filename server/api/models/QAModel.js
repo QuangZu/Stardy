@@ -21,12 +21,12 @@ const QASchema = new mongoose.Schema(
             errorMessage: "Subject ID is required"
         },
 
-        levelId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Level',
+        subjectName: {
+            type: String,
+            ref: 'Subject',
             required: true,
-            errorMessage: "Level ID is required"
-        }
+            errorMessage: "Subject name is required"
+        },
     },
     {
         versionKey: false,

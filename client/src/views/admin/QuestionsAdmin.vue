@@ -13,176 +13,257 @@
 
     <!-- Main Content -->
     <main class="admin-content">
-    <div class="p-6">
-      <!-- Header Section -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 class="text-section-header text-gray-900">Question Management</h1>
-          <p class="text-body text-gray-600 mt-1">Create and manage questions for exams</p>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="relative">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search questions..."
-              class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-body"
-            >
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      <div class="p-6">
+        <!-- Header Section -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-section-header text-gray-900">Question Management</h1>
+            <p class="text-body text-gray-600 mt-1">Create and manage questions</p>
           </div>
-          <button
-            @click="showCreateQuestionModal = true"
-            class="btn-primary flex items-center gap-2"
-          >
-            <i class="fas fa-plus"></i>
-            Add Question
-          </button>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search questions..."
+                class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-body"
+              >
+              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <button
+              @click="showCreateQuestionModal = true"
+              class="btn-primary flex items-center gap-2"
+            >
+              <i class="fas fa-plus"></i>
+              Add Question
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Questions Table -->
-      <div class="chart-container overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Question</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Level</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="question in filteredQuestions" :key="question._id" class="hover:bg-gray-50 transition-colors duration-150">
-                <td class="px-6 py-4">
-                  <div class="flex items-center">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                      <i class="fas fa-question-circle text-primary"></i>
+        <!-- Questions Table -->
+        <div class="chart-container overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="question in filteredQuestions" :key="question._id" class="hover:bg-gray-50 transition-colors duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-small text-gray-500 font-mono">{{ question._id ? question._id.slice(-6) : 'N/A' }}</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center">
+                      <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-question text-purple-600"></i>
+                      </div>
+                      <div class="max-w-xs">
+                        <div class="text-body font-medium text-gray-900 truncate" :title="question.question">
+                          {{ question.question || 'N/A' }}
+                        </div>
+                        <div class="text-small text-gray-500 truncate" :title="question.answer">
+                          Answer: {{ question.answer || 'N/A' }}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div class="text-body font-medium text-gray-900">{{ question.question.substring(0, 50) }}...</div>
-                      <div class="text-small text-gray-500">ID: {{ question._id.slice(-6) }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {{ question.subjectName || getSubjectName(question.subjectId) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-body text-gray-900">{{ formatDate(question.createdAt) }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-body font-medium">
+                    <div class="flex space-x-2">
+                      <button
+                        @click="editQuestion(question)"
+                        class="text-primary hover:text-blue-900 transition-colors duration-150"
+                        title="Edit Question"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button
+                        @click="confirmDeleteQuestion(question._id)"
+                        class="text-error hover:text-red-900 transition-colors duration-150"
+                        title="Delete Question"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-body text-gray-900">{{ getSubjectName(question.subjectId) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex px-2 py-1 text-small font-semibold rounded-full bg-blue-100 text-blue-800">
-                    Level {{ question.levelId }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex px-2 py-1 text-small font-semibold rounded-full bg-gray-100 text-gray-800">
-                    {{ question.type }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-body text-gray-900">{{ formatDate(question.createdAt) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-body font-medium">
-                  <div class="flex space-x-2">
-                    <button
-                      @click="editQuestion(question)"
-                      class="text-primary hover:text-blue-900 transition-colors duration-150"
-                      title="Edit Question"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button
-                      @click="deleteQuestion(question._id)"
-                      class="text-error hover:text-red-900 transition-colors duration-150"
-                      title="Delete Question"
-                    >
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+                <tr v-if="filteredQuestions.length === 0">
+                  <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                    <div class="flex flex-col items-center justify-center py-8">
+                      <i class="fas fa-question-circle text-gray-300 text-4xl mb-4"></i>
+                      <p class="text-body text-gray-500">No questions found</p>
+                      <p class="text-small text-gray-400">Create a new question to get started</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- Create Question Modal -->
     <div v-if="showCreateQuestionModal" class="modal-overlay" @click="showCreateQuestionModal = false">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Create New Question</h3>
-          <button @click="showCreateQuestionModal = false" class="close-btn">
+          <button @click="showCreateQuestionModal = false" class="modal-close">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createQuestion">
             <div class="form-group">
-              <label>Question</label>
+              <label for="questionText">Question</label>
               <textarea
+                id="questionText"
                 v-model="newQuestion.question"
+                class="form-textarea"
+                placeholder="Enter question text"
                 rows="3"
                 required
-                class="form-textarea"
-                placeholder="Enter the question text"
               ></textarea>
             </div>
             <div class="form-group">
-              <label>Subject</label>
-              <select
-                v-model="newQuestion.subjectId"
+              <label for="answerText">Answer</label>
+              <textarea
+                id="answerText"
+                v-model="newQuestion.answer"
+                class="form-textarea"
+                placeholder="Enter answer text"
+                rows="3"
                 required
-                class="form-select"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="questionSubject">Subject</label>
+              <select
+                id="questionSubject"
+                v-model="newQuestion.subjectId"
+                class="form-input"
+                required
               >
-                <option value="">Select a subject</option>
+                <option value="" disabled>Select a subject</option>
                 <option v-for="subject in subjects" :key="subject._id" :value="subject._id">
                   {{ subject.name }}
                 </option>
               </select>
             </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button @click="showCreateQuestionModal = false" class="btn-secondary">Cancel</button>
+          <button @click="createQuestion" class="btn-primary" :disabled="isLoading">Create Question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Question Modal -->
+    <div v-if="showEditQuestionModal" class="modal-overlay" @click="showEditQuestionModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Edit Question</h3>
+          <button @click="showEditQuestionModal = false" class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateQuestion">
             <div class="form-group">
-              <label>Level</label>
-              <input
-                v-model="newQuestion.levelId"
-                type="number"
-                min="1"
+              <label for="editQuestionText">Question</label>
+              <textarea
+                id="editQuestionText"
+                v-model="editingQuestion.question"
+                class="form-textarea"
+                placeholder="Enter question text"
+                rows="3"
                 required
-                class="form-input"
-                placeholder="Enter difficulty level"
-              >
+              ></textarea>
             </div>
             <div class="form-group">
-              <label>Type</label>
-              <select v-model="newQuestion.type" class="form-select">
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="true-false">True/False</option>
-                <option value="short-answer">Short Answer</option>
+              <label for="editAnswerText">Answer</label>
+              <textarea
+                id="editAnswerText"
+                v-model="editingQuestion.answer"
+                class="form-textarea"
+                placeholder="Enter answer text"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="editQuestionSubject">Subject</label>
+              <select
+                id="editQuestionSubject"
+                v-model="editingQuestion.subjectId"
+                class="form-input"
+                required
+              >
+                <option value="" disabled>Select a subject</option>
+                <option v-for="subject in subjects" :key="subject._id" :value="subject._id">
+                  {{ subject.name }}
+                </option>
               </select>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" @click="showCreateQuestionModal = false" class="btn-cancel">
-            Cancel
-          </button>
-          <button type="submit" @click="createQuestion" class="btn-save">
-            Create Question
-          </button>
+          <button @click="showEditQuestionModal = false" class="btn-secondary">Cancel</button>
+          <button @click="updateQuestion" class="btn-primary" :disabled="isLoading">Update Question</button>
         </div>
       </div>
     </div>
-    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Confirm Delete</h3>
+          <button @click="showDeleteModal = false" class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fas fa-exclamation-triangle text-error text-4xl mb-4"></i>
+            <p class="text-body text-gray-700 mb-4">Are you sure you want to delete this question?</p>
+            <p class="text-small text-error">This action cannot be undone.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="showDeleteModal = false" class="btn-secondary">Cancel</button>
+          <button @click="deleteQuestion" class="btn-primary bg-error hover:bg-red-700" :disabled="isLoading">Delete Question</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import AdminHeader from '@/components/admin/AdminHeader.vue'
-import { getAllQAs, createQA, deleteQA } from '@/api/QA.js'
-import { getAllSubjects } from '@/api/Subject.js'
 import { useNotification } from '@/composables/useNotification'
+import { 
+  getAllQAs, 
+  createQA, 
+  updateQA, 
+  deleteQA 
+} from '@/api/QA.js'
+import { getAllSubjects } from '@/api/Subject.js'
 
 export default {
   name: 'QuestionsAdmin',
@@ -205,20 +286,31 @@ export default {
       questions: [],
       subjects: [],
       searchQuery: '',
+      isLoading: false,
       showCreateQuestionModal: false,
+      showEditQuestionModal: false,
+      showDeleteModal: false,
+      questionToDeleteId: null,
       newQuestion: {
         question: '',
-        subjectId: '',
-        levelId: 1,
-        type: 'multiple-choice'
+        answer: '',
+        subjectId: ''
+      },
+      editingQuestion: {
+        _id: '',
+        question: '',
+        answer: '',
+        subjectId: ''
       }
     }
   },
   computed: {
     filteredQuestions() {
-      if (!this.searchQuery) return this.questions
-      return this.questions.filter(question => 
-        question.question.toLowerCase().includes(this.searchQuery.toLowerCase())
+      if (!this.searchQuery) return this.questions || []
+      return (this.questions || []).filter(question => 
+        (question.question || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (question.answer || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (question.subjectName || this.getSubjectName(question.subjectId)).toLowerCase().includes(this.searchQuery.toLowerCase())
       )
     }
   },
@@ -229,16 +321,21 @@ export default {
   methods: {
     async fetchQuestions() {
       try {
-        this.questions = await getAllQAs()
+        this.isLoading = true
+        const response = await getAllQAs()
+        this.questions = Array.isArray(response) ? response : (response.data || [])
       } catch (error) {
         console.error('Error fetching questions:', error)
         this.showError('Error', 'Failed to fetch questions. Please try again.')
+        this.questions = []
+      } finally {
+        this.isLoading = false
       }
     },
     async fetchSubjects() {
       try {
         const response = await getAllSubjects()
-        this.subjects = response.data || response || []
+        this.subjects = Array.isArray(response) ? response : (response.data || [])
       } catch (error) {
         console.error('Error fetching subjects:', error)
         this.showWarning('Warning', 'Failed to fetch subjects. Some features may be limited.')
@@ -246,39 +343,69 @@ export default {
       }
     },
     getSubjectName(subjectId) {
+      if (!subjectId) return 'No Subject'
       const subject = this.subjects.find(s => s._id === subjectId)
-      return subject ? subject.name : 'Unknown'
+      return subject ? subject.name : 'Unknown Subject'
     },
     async createQuestion() {
       try {
+        this.isLoading = true
         await createQA(this.newQuestion)
         await this.fetchQuestions()
         this.showCreateQuestionModal = false
-        this.newQuestion = { question: '', subjectId: '', levelId: 1, type: 'multiple-choice' }
+        this.newQuestion = { question: '', answer: '', subjectId: '' }
         this.showSuccess('Success', 'Question created successfully!')
       } catch (error) {
         console.error('Error creating question:', error)
         this.showError('Error', 'Failed to create question. Please try again.')
+      } finally {
+        this.isLoading = false
       }
     },
     editQuestion(question) {
-      console.log('Edit question:', question)
-      this.showInfo('Info', 'Edit functionality will be implemented soon.')
+      this.editingQuestion = { ...question }
+      this.showEditQuestionModal = true
     },
-    async deleteQuestion(questionId) {
-      if (confirm('Are you sure you want to delete this question?')) {
-        try {
-          await deleteQA(questionId)
-          await this.fetchQuestions()
-          this.showSuccess('Success', 'Question deleted successfully!')
-        } catch (error) {
-          console.error('Error deleting question:', error)
-          this.showError('Error', 'Failed to delete question. Please try again.')
-        }
+    async updateQuestion() {
+      try {
+        this.isLoading = true
+        await updateQA(this.editingQuestion._id, this.editingQuestion)
+        await this.fetchQuestions()
+        this.showEditQuestionModal = false
+        this.showSuccess('Success', 'Question updated successfully!')
+      } catch (error) {
+        console.error('Error updating question:', error)
+        this.showError('Error', 'Failed to update question. Please try again.')
+      } finally {
+        this.isLoading = false
       }
     },
-    formatDate(date) {
-      return new Date(date).toLocaleDateString()
+    confirmDeleteQuestion(questionId) {
+      this.questionToDeleteId = questionId
+      this.showDeleteModal = true
+    },
+    async deleteQuestion() {
+      try {
+        this.isLoading = true
+        await deleteQA(this.questionToDeleteId)
+        await this.fetchQuestions()
+        this.showDeleteModal = false
+        this.questionToDeleteId = null
+        this.showSuccess('Success', 'Question deleted successfully!')
+      } catch (error) {
+        console.error('Error deleting question:', error)
+        this.showError('Error', 'Failed to delete question. Please try again.')
+      } finally {
+        this.isLoading = false
+      }
+    },
+    formatDate(timestamp) {
+      if (!timestamp) return 'N/A'
+      return new Date(timestamp).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
     },
     logout() {
       localStorage.removeItem('token')
@@ -290,6 +417,6 @@ export default {
 </script>
 
 <style scoped>
-@import '@/styles/admin/design-system.css';
 @import '@/styles/admin/admin-modal.css';
+@import '@/styles/admin/design-system.css';
 </style>

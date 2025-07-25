@@ -27,16 +27,36 @@ const getQA = async (req, res) => {
 
 const createQA = async (req, res) => {
     try {
+        if (!req.body.levelId) {
+            delete req.body.levelId;
+        }
+        
+        if (req.body.subjectId && !req.body.subjectName) {
+            const subject = await Subject.findById(req.body.subjectId);
+            if (subject) {
+                req.body.subjectName = subject.name;
+            }
+        }
+        
         const newQA = new QA(req.body);
         const savedQA = await newQA.save();
         res.status(201).json(savedQA);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error creating QA:', error);
+        res.status(500).json({ message: 'Error creating QA', error: error.message });
     }
 };
 
 const updateQA = async (req, res) => {
     try {
+        // If subjectId is provided, fetch the subject name
+        if (req.body.subjectId && !req.body.subjectName) {
+            const subject = await Subject.findById(req.body.subjectId);
+            if (subject) {
+                req.body.subjectName = subject.name;
+            }
+        }
+        
         const updatedQA = await QA.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedQA) {
             return res.status(404).json({ message: "QA not found" });

@@ -60,10 +60,6 @@
                   <input v-model="userProfile.email" type="email" :disabled="!editMode" />
                 </div>
                 <div class="detail-group">
-                  <label>Full Name</label>
-                  <input v-model="userProfile.fullName" type="text" :disabled="!editMode" />
-                </div>
-                <div class="detail-group">
                   <label>Bio</label>
                   <textarea v-model="userProfile.bio" :disabled="!editMode" rows="3"></textarea>
                 </div>
@@ -205,7 +201,6 @@ export default {
       userProfile: {
         username: '',
         email: '',
-        fullName: '',
         bio: ''
       },
       accountStats: {
@@ -269,7 +264,6 @@ export default {
         this.userProfile = {
           username: accountData.username || '',
           email: accountData.email || '',
-          fullName: accountData.fullName || '',
           bio: accountData.bio || 'No bio available'
         };
         
