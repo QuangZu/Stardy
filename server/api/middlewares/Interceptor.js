@@ -11,10 +11,8 @@ const {
     errorRecovery 
 } = require('./faultTolerance');
 
-// Configure CORS with enhanced options
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, etc.)
         if (!origin) return callback(null, true);
         
         const allowedOrigins = [
@@ -32,33 +30,46 @@ const corsOptions = {
     },
     credentials: true,
     optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Added PATCH here
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
-// Configure request logger
 const requestLogger = morgan('combined');
 
-// Configure sanitization
 const sanitizeRequest = (req, res, next) => {
-    // Sanitize req.body
+    const sanitizeObject = (obj, excludeFields = []) => {
+        if (typeof obj !== 'object' || obj === null) return obj;
+        
+        const sanitized = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Skip sanitization for avatar-related fields and file paths
+            if (excludeFields.includes(key) || 
+                key.includes('avatar') || 
+                key.includes('Avatar') ||
+                key.includes('path') ||
+                key.includes('url') ||
+                key.includes('src')) {
+                sanitized[key] = value;
+            } else {
+                const sanitizedKey = key.replace(/[$]/g, '_'); // Only replace $ not dots
+                sanitized[sanitizedKey] = typeof value === 'object' && value !== null 
+                    ? sanitizeObject(value, excludeFields) 
+                    : typeof value === 'string' 
+                        ? value.replace(/[$]/g, '_')  // Only replace $ not dots
+                        : value;
+            }
+        }
+        return sanitized;
+    };
+    
+    const excludeFields = ['avatar', 'avatarUrl', 'defaultAvatar', 'path', 'src', 'url', 'filePath'];
+    
     if (req.body) {
-        req.body = JSON.parse(JSON.stringify(req.body).replace(/\$/g, '_').replace(/\./g, '_'));
+        req.body = sanitizeObject(req.body, excludeFields);
     }
     
-    // Sanitize req.query
     if (req.query) {
-        const sanitizedQuery = {};
-        for (const key in req.query) {
-            const sanitizedKey = key.replace(/\$/g, '_').replace(/\./g, '_');
-            sanitizedQuery[sanitizedKey] = req.query[key];
-        }
-        Object.defineProperty(req, 'query', {
-            value: sanitizedQuery,
-            writable: true,
-            enumerable: true,
-            configurable: true
-        });
+        req.query = sanitizeObject(req.query, excludeFields);
     }
     
     next();

@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 
 // Load environment variables
 require('dotenv').config();
@@ -47,6 +48,11 @@ app.use('/api', rateLimiters.api);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static file serving for uploads and avatars
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/avatars', express.static(path.join(__dirname, 'uploads', 'avatars')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 const router = require('./api/routes/index');

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const backendURL = 'https://stardy-3old.onrender.com/api';
+const backendURL = 'http://localhost:3000/api';
 
 // Get authorization header
 const getAuthHeader = () => {
@@ -8,7 +8,6 @@ const getAuthHeader = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// AI Chatbot Functions
 
 /**
  * Send a message to the AI chatbot
@@ -17,7 +16,7 @@ const getAuthHeader = () => {
  */
 export const chatWithAI = async (message) => {
   try {
-    const response = await axios.post(`${backendURL}/ai/chatbot`, { message }, {
+    const response = await axios.post(`${backendURL}/ai/chat`, { message }, {
       headers: getAuthHeader()
     });
     return response.data;
@@ -294,4 +293,112 @@ export const getQuickSuggestions = (page) => {
   };
   
   return suggestions[page] || suggestions.default;
+};
+
+// Process YouTube video
+export const processYouTubeVideo = async (url) => {
+    try {
+        if (!url || typeof url !== 'string' || url.trim() === '') {
+          throw new Error('YouTube URL is required');
+        }
+        
+        console.log('Sending request to process YouTube video:', url); // Debug log
+        
+        const response = await axios.post(`${backendURL}/ai/process/youtube`, 
+            { url: url.trim() },
+            { 
+                headers: getAuthHeader(),
+                timeout: 60000 // 60 second timeout
+            }
+        );
+        
+        console.log('YouTube processing response:', response.data); // Debug log
+        return response.data;
+    } catch (error) {
+        console.error('Error processing YouTube video:', error);
+        
+        // Enhanced error handling
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout. The video processing is taking too long.');
+        }
+        
+        if (error.response) {
+            // Server responded with error status
+            throw new Error(error.response.data?.message || `Server error: ${error.response.status}`);
+        } else if (error.request) {
+            // Request was made but no response received
+            throw new Error('Network error. Please check your internet connection.');
+        } else {
+            // Something else happened
+            throw error;
+        }
+    }
+};
+
+// Process document upload
+export const processDocument = async (file) => {
+    try {
+        if (!file) {
+            throw new Error('Document file is required');
+        }
+        
+        console.log('Sending request to process document:', file.name); // Debug log
+        
+        const formData = new FormData();
+        formData.append('document', file);
+        
+        const response = await axios.post(`${backendURL}/ai/process/document`, 
+            formData,
+            { 
+                headers: {
+                    ...getAuthHeader(),
+                    'Content-Type': 'multipart/form-data'
+                },
+                timeout: 120000 // 2 minute timeout for document processing
+            }
+        );
+        
+        console.log('Document processing response:', response.data); // Debug log
+        return response.data;
+    } catch (error) {
+        console.error('Error processing document:', error);
+        
+        // Enhanced error handling
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout. The document processing is taking too long.');
+        }
+        
+        if (error.response) {
+            // Server responded with error status
+            throw new Error(error.response.data?.message || `Server error: ${error.response.status}`);
+        } else if (error.request) {
+            // Request was made but no response received
+            throw new Error('Network error. Please check your internet connection.');
+        } else {
+            // Something else happened
+            throw error;
+        }
+    }
+};
+
+// Process audio upload
+export const processAudio = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append('audio', file);
+        
+        const response = await axios.post(`${backendURL}/ai/process/audio`, 
+            formData,
+            { 
+                headers: {
+                    ...getAuthHeader(),
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error processing audio:', error);
+        throw error;
+    }
 };

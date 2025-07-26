@@ -11,7 +11,6 @@ import Exams from './views/user/Exams.vue'
 import Subjects from './views/user/Subjects.vue'
 import Progress from './views/user/Progress.vue'
 import Notes from './views/user/Notes.vue'
-import Schedule from './views/user/Schedule.vue'
 import AITutor from './views/user/AITutor.vue'
 import Profile from './views/user/Profile.vue'
 // Admin pages
@@ -98,9 +97,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/schedule',
-    name: 'Schedule',
-    component: Schedule,
+    path: '/notes/:id',
+    name: 'NoteDetail',
+    component: Notes,
     meta: { requiresAuth: true }
   },
   {

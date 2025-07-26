@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const backendURL = 'https://stardy-3old.onrender.com/api';
+const backendURL = 'http://localhost:3000/api';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -81,29 +81,14 @@ export const deleteAccount = async (userId) => {
 };
 
 // Get user progress
-export const getUserProgress = async (userId) => {
+export const getUserProgress = async () => {
     try {
-        const response = await axios.get(`${backendURL}/accounts/${userId}/progress`, {
+        const response = await axios.get(`${backendURL}/progress/`, {
             headers: getAuthHeader()
         });
         return response.data;
     } catch (error) {
         console.error('Error fetching user progress:', error);
-        throw error;
-    }
-};
-
-// Get today's schedules for user
-export const getTodaySchedules = async (userId) => {
-    try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await axios.get(`${backendURL}/accounts/${userId}/schedules`, {
-            params: { date: today },
-            headers: getAuthHeader()
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching schedules:', error);
         throw error;
     }
 };
@@ -133,6 +118,18 @@ export const checkUserRole = async () => {
         return response.data;
     } catch (error) {
         console.error('Check user role error:', error);
+        throw error;
+    }
+};
+
+export const getUserIdFromToken = async () => {
+    try {
+        const response = await axios.get(`${backendURL}/accounts/user-id`, {
+            headers: getAuthHeader()
+        });
+        return response.data.userId;
+    } catch (error) {
+        console.error('Error getting user ID from token:', error);
         throw error;
     }
 };

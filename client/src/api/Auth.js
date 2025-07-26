@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const backendURL = 'https://stardy-3old.onrender.com/api';
+const backendURL = 'http://localhost:3000/api';
 
 // Helper function to get authorization header
 const getAuthHeader = () => {

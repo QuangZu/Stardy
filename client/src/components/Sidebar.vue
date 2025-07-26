@@ -7,7 +7,7 @@
       <router-link to="/profile" class="nav-link">
         <div class="user-profile">
           <div class="avatar">
-            <img :src="userAvatar || defaultAvatar" alt="User Avatar" />
+            <img :src="getAvatarUrl()" alt="User Avatar" @error="handleAvatarError" />
           </div>
           <div class="user-info">
             <h4 class="space-text-primary">{{ userName }}</h4>
@@ -35,12 +35,6 @@
           <router-link to="/exams" class="nav-link">
             <i class="icon fas fa-file-alt"></i>
             <span>Exams</span>
-          </router-link>
-        </li>
-        <li class="nav-item" :class="{ active: currentRoute === 'schedule' }">
-          <router-link to="/schedule" class="nav-link">
-            <i class="icon fas fa-calendar"></i>
-            <span>Schedule</span>
           </router-link>
         </li>
         <li class="nav-item" :class="{ active: currentRoute === 'progress' }">
@@ -74,7 +68,7 @@
 </template>
 
 <script>
-import { getAccount, getUserProgress, getTodaySchedules } from '@/api/Account';
+import { getAccount, getUserProgress } from '@/api/Account';
 import { getUserNotes } from '@/api/Note';
 
 export default {
@@ -83,19 +77,19 @@ export default {
     return {
       userName: '',
       userLevel: 1,
-      userAvatar: '',
+      userAvatar: null,
       userEmail: '',
       userId: null,
       loading: false,
       error: null,
-      defaultAvatar: ('@/assets/avatar/astronaunt.jpg'),
+      defaultAvatar: require('@/assets/avatar/astronaunt.jpg'),
+      avatarError: false,
       userStats: {
         experience: 0,
         completedQuestions: 0,
         achievements: 0,
         streak: 0
       },
-      todayEvents: [],
       recentNotes: []
     };
   },
@@ -161,10 +155,25 @@ export default {
       }
     },
 
+    getAvatarUrl() {
+      // If there's an avatar error or no user avatar, use default
+      if (this.avatarError || !this.userAvatar) {
+        return this.defaultAvatar;
+      }
+      
+      // Default fallback
+      return this.defaultAvatar;
+    },
+    
+    handleAvatarError() {
+      this.avatarError = true;
+    },
+    
     async loadUserData() {
       try {
         this.loading = true;
         this.error = null;
+        this.avatarError = false;
         
         const userId = this.getUserIdFromToken();
         if (!userId) {
@@ -178,13 +187,14 @@ export default {
           this.userName = accountData.username || 'Unknown User';
           this.userEmail = accountData.email || '';
           this.userLevel = accountData.currentLevel || 1;
-          this.userAvatar = accountData.avatar || this.defaultAvatar;
+          this.userAvatar = accountData.avatar;
           
           this.userStats.experience = accountData.experience || 0;
           this.userStats.completedQuestions = accountData.completedQuestions?.length || 0;
           this.userStats.achievements = accountData.achievements?.length || 0;
           this.calculateLevelProgress();
         }
+        
         try {
           const progressData = await getUserProgress(userId);
           if (progressData && progressData.studyStreak) {
@@ -197,22 +207,6 @@ export default {
           console.warn('Could not load user progress:', progressError);
         }
         
-        try {
-          const scheduleData = await getTodaySchedules(userId);
-          if (Array.isArray(scheduleData)) {
-            this.todayEvents = scheduleData.map(schedule => ({
-              id: schedule._id,
-              title: schedule.title || 'Untitled Event',
-              description: schedule.description || '',
-              startTime: schedule.time,
-              type: schedule.type || 'general'
-            }));
-            this.$emit('today-events', this.todayEvents);
-          }
-        } catch (scheduleError) {
-          console.error('Error loading schedule data:', scheduleError);
-          this.todayEvents = [];
-        }
         try {
           const notesData = await getUserNotes(userId);
           if (Array.isArray(notesData)) {
@@ -242,6 +236,10 @@ export default {
         this.loading = false;
       }
     }
+  },
+  
+  mounted() {
+    this.loadUserData();
   }
 };
 </script>

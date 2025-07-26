@@ -27,6 +27,13 @@ const QASchema = new mongoose.Schema(
             required: true,
             errorMessage: "Subject name is required"
         },
+
+        examId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Exam',
+            required: true,
+            errorMessage: "Exam ID is required"
+        },
     },
     {
         versionKey: false,

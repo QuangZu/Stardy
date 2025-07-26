@@ -9,7 +9,7 @@ const getAllSubjects = async (req, res) => {
     }
 };
 
-const getSubject = async (req, res) => {
+const getSubjectById = async (req, res) => {
     try {
         const subject = await Subject.findById(req.params.id);
         if (!subject) {
@@ -67,7 +67,7 @@ const getSubjectsByCategory = async (req, res) => {
 
 module.exports = {
     getAllSubjects,
-    getSubject,
+    getSubjectById,
     createSubject,
     updateSubject,
     deleteSubject,

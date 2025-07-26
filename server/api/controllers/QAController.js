@@ -1,12 +1,13 @@
 const QA = require('../models/QAModel');
 const Subject = require('../models/SubjectModel');
-const Level = require('../models/LevelModel');
 const Account = require('../models/AccountModel');
 const UserProgress = require('../models/UserProgressModel');
 
 const getAllQAs = async (req, res) => {
     try {
-        const qas = await QA.find().populate('subjectId', 'name').populate('levelId', 'name');
+        const qas = await QA.find()
+            .populate('subjectId', 'name')
+            .populate('examId', 'title');
         res.status(200).json(qas);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -15,7 +16,7 @@ const getAllQAs = async (req, res) => {
 
 const getQA = async (req, res) => {
     try {
-        const qa = await QA.findById(req.params.id).populate('subjectId', 'name').populate('levelId', 'name');
+        const qa = await QA.findById(req.params.id).populate('subjectId', 'name');
         if (!qa) {
             return res.status(404).json({ message: "QA not found" });
         }
@@ -27,37 +28,43 @@ const getQA = async (req, res) => {
 
 const createQA = async (req, res) => {
     try {
-        if (!req.body.levelId) {
-            delete req.body.levelId;
+        const { subjectId } = req.body;
+        
+        // Get subject name from subjectId
+        const subject = await Subject.findById(subjectId);
+        if (!subject) {
+            return res.status(404).json({ message: "Subject not found" });
         }
         
-        if (req.body.subjectId && !req.body.subjectName) {
-            const subject = await Subject.findById(req.body.subjectId);
-            if (subject) {
-                req.body.subjectName = subject.name;
-            }
-        }
+        const qaData = {
+            ...req.body,
+            subjectName: subject.name
+        };
         
-        const newQA = new QA(req.body);
+        const newQA = new QA(qaData);
         const savedQA = await newQA.save();
         res.status(201).json(savedQA);
     } catch (error) {
-        console.error('Error creating QA:', error);
-        res.status(500).json({ message: 'Error creating QA', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
 const updateQA = async (req, res) => {
     try {
-        // If subjectId is provided, fetch the subject name
-        if (req.body.subjectId && !req.body.subjectName) {
-            const subject = await Subject.findById(req.body.subjectId);
-            if (subject) {
-                req.body.subjectName = subject.name;
+        const { subjectId } = req.body;
+        
+        let updateData = { ...req.body };
+        
+        // If subjectId is being updated, get the new subject name
+        if (subjectId) {
+            const subject = await Subject.findById(subjectId);
+            if (!subject) {
+                return res.status(404).json({ message: "Subject not found" });
             }
+            updateData.subjectName = subject.name;
         }
         
-        const updatedQA = await QA.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedQA = await QA.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedQA) {
             return res.status(404).json({ message: "QA not found" });
         }
@@ -73,7 +80,7 @@ const deleteQA = async (req, res) => {
         if (!deletedQA) {
             return res.status(404).json({ message: "QA not found" });
         }
-        res.status(204).send();
+        res.status(200).json({ message: 'QA deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -81,20 +88,7 @@ const deleteQA = async (req, res) => {
 
 const getQAsBySubject = async (req, res) => {
     try {
-        const qas = await QA.find({ subjectId: req.params.subjectId })
-            .populate('subjectId', 'name')
-            .populate('levelId', 'name');
-        res.status(200).json(qas);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const getQAsByLevel = async (req, res) => {
-    try {
-        const qas = await QA.find({ levelId: req.params.levelId })
-            .populate('subjectId', 'name')
-            .populate('levelId', 'name');
+        const qas = await QA.find({ subjectId: req.params.subjectId }).populate('subjectId', 'name');
         res.status(200).json(qas);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -103,203 +97,71 @@ const getQAsByLevel = async (req, res) => {
 
 const answerQA = async (req, res) => {
     try {
-        const { qaId, answer } = req.body;
-        const userId = req.user.id;
+        const { userId, qaId, userAnswer } = req.body;
         
-        // Check if QA exists
+        // Get the QA
         const qa = await QA.findById(qaId);
         if (!qa) {
-            return res.status(404).json({ message: "QA not found" });
-        }
-        
-        // Check if user exists
-        const user = await Account.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: "Question not found" });
         }
         
         // Check if answer is correct
-        const isCorrect = qa.answer === answer;
+        const isCorrect = qa.answer.toLowerCase() === userAnswer.toLowerCase();
         
         // Update user progress
         const userProgress = await UserProgress.findOne({ userId });
         if (userProgress) {
-            // Find subject progress or create new one
-            let subjectProgress = userProgress.subjectProgress.find(
-                sp => sp.subjectId.toString() === qa.subjectId.toString()
+            // Add to answered questions
+            const existingAnswer = userProgress.answeredQuestions.find(
+                aq => aq.questionId.toString() === qaId
             );
             
-            if (subjectProgress) {
-                subjectProgress.questionsAnswered += 1;
-                if (isCorrect) {
-                    subjectProgress.correctAnswers += 1;
-                }
+            if (existingAnswer) {
+                existingAnswer.isCorrect = isCorrect;
+                existingAnswer.answeredAt = new Date();
             } else {
-                userProgress.subjectProgress.push({
-                    subjectId: qa.subjectId,
-                    questionsAnswered: 1,
-                    correctAnswers: isCorrect ? 1 : 0,
-                    completionPercentage: 0 // Will be calculated below
+                userProgress.answeredQuestions.push({
+                    questionId: qaId,
+                    isCorrect,
+                    answeredAt: new Date()
                 });
-                
-                subjectProgress = userProgress.subjectProgress[userProgress.subjectProgress.length - 1];
-            }
-            
-            // Calculate completion percentage
-            const totalQuestions = await QA.countDocuments({ subjectId: qa.subjectId });
-            
-            if (totalQuestions > 0) {
-                subjectProgress.completionPercentage = Math.min(
-                    100,
-                    Math.round((subjectProgress.questionsAnswered / totalQuestions) * 100)
-                );
             }
             
             await userProgress.save();
-            
-            // Check for subject mastery achievements
-            if (subjectProgress.completionPercentage >= 80) {
-                await checkSubjectMasteryAchievement(userId, qa.subjectId);
-            }
-        }
-        
-        // If answer is correct and not already completed, add to completed questions and give XP
-        if (isCorrect && !user.completedQuestions.includes(qaId)) {
-            user.completedQuestions.push(qaId);
-            
-            // XP reward based on question level
-            const level = await Level.findById(qa.levelId);
-            const xpReward = level ? Math.max(10, level.level * 5) : 10;
-            
-            user.experience += xpReward;
-            
-            // Check if user leveled up
-            const levelUpInfo = await checkLevelUp(user);
-            
-            await user.save();
-            
-            return res.status(200).json({
-                message: "Answer submitted",
-                isCorrect,
-                experienceGained: xpReward,
-                levelUp: levelUpInfo.leveledUp,
-                newLevel: levelUpInfo.leveledUp ? levelUpInfo.newLevel : null
-            });
         }
         
         res.status(200).json({
-            message: "Answer submitted",
-            isCorrect
+            message: "Answer submitted successfully",
+            isCorrect,
+            correctAnswer: qa.answer
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// Helper function to check if user leveled up
-const checkLevelUp = async (user) => {
-    try {
-        // Get the next level
-        const nextLevel = await Level.findOne({ level: user.currentLevel + 1 });
-        
-        // If there's no next level, user is at max level
-        if (!nextLevel) {
-            return { leveledUp: false };
-        }
-        
-        // Check if user has enough XP to level up
-        if (user.experience >= nextLevel.experienceRequired) {
-            user.currentLevel += 1;
-            return { leveledUp: true, newLevel: user.currentLevel };
-        }
-        
-        return { leveledUp: false };
-    } catch (error) {
-        console.error("Error checking level up:", error);
-        return { leveledUp: false };
-    }
-};
-
-// Helper function to check for subject mastery achievements
-const checkSubjectMasteryAchievement = async (userId, subjectId) => {
-    try {
-        const Achievement = require('../models/AchievementModel');
-        const user = await Account.findById(userId);
-        
-        // Find subject mastery achievement
-        const achievement = await Achievement.findOne({
-            'requirements.type': 'subjectMastery',
-            'requirements.subjectId': subjectId
-        });
-        
-        if (achievement && !user.achievements.includes(achievement._id)) {
-            // Unlock achievement
-            user.achievements.push(achievement._id);
-            user.experience += achievement.experiencePoints;
-            await user.save();
-            
-            // Check if user leveled up
-            await checkLevelUp(user);
-        }
-    } catch (error) {
-        console.error("Error checking subject mastery achievement:", error);
-    }
-};
-
 const getRecommendedQAs = async (req, res) => {
     try {
-        const userId = req.user.id;
-        
-        // Get user
-        const user = await Account.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+        const { userId } = req.params;
         
         // Get user progress
         const userProgress = await UserProgress.findOne({ userId });
-        if (!userProgress) {
-            return res.status(404).json({ message: "User progress not found" });
-        }
+        const answeredQuestionIds = userProgress ? 
+            userProgress.answeredQuestions.map(aq => aq.questionId) : [];
         
-        // Get completed questions
-        const completedQuestionIds = user.completedQuestions.map(id => id.toString());
-        
-        // Get questions appropriate for user's level
-        const level = await Level.findOne({ level: user.currentLevel });
-        if (!level) {
-            return res.status(404).json({ message: "Level not found" });
-        }
-        
-        // Find questions that match user's level and haven't been completed
+        // Get unanswered questions
         let recommendedQAs = await QA.find({
-            levelId: level._id,
-            _id: { $nin: completedQuestionIds }
-        }).limit(5).populate('subjectId', 'name').populate('levelId', 'name');
+            _id: { $nin: answeredQuestionIds }
+        }).populate('subjectId', 'name').limit(10);
         
-        // If not enough questions found, get questions from subjects user is studying
-        if (recommendedQAs.length < 5 && userProgress.subjectProgress.length > 0) {
-            // Get subjects user is studying, sorted by completion percentage (ascending)
-            const subjectIds = userProgress.subjectProgress
-                .sort((a, b) => a.completionPercentage - b.completionPercentage)
-                .map(sp => sp.subjectId);
+        // If no unanswered questions, get random questions
+        if (recommendedQAs.length === 0) {
+            recommendedQAs = await QA.aggregate([
+                { $sample: { size: 10 } }
+            ]);
             
-            // Find additional questions from these subjects
-            const additionalQAs = await QA.find({
-                subjectId: { $in: subjectIds },
-                _id: { $nin: [...completedQuestionIds, ...recommendedQAs.map(qa => qa._id)] }
-            }).limit(5 - recommendedQAs.length).populate('subjectId', 'name').populate('levelId', 'name');
-            
-            recommendedQAs = [...recommendedQAs, ...additionalQAs];
-        }
-        
-        // If still not enough questions, get random questions
-        if (recommendedQAs.length < 5) {
-            const randomQAs = await QA.find({
-                _id: { $nin: [...completedQuestionIds, ...recommendedQAs.map(qa => qa._id)] }
-            }).limit(5 - recommendedQAs.length).populate('subjectId', 'name').populate('levelId', 'name');
-            
-            recommendedQAs = [...recommendedQAs, ...randomQAs];
+            // Populate subject info for aggregated results
+            await QA.populate(recommendedQAs, { path: 'subjectId', select: 'name' });
         }
         
         res.status(200).json(recommendedQAs);
@@ -315,7 +177,6 @@ module.exports = {
     updateQA,
     deleteQA,
     getQAsBySubject,
-    getQAsByLevel,
     answerQA,
     getRecommendedQAs
 };

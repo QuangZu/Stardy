@@ -2,7 +2,6 @@ const Account = require('../models/AccountModel');
 const Subject = require('../models/SubjectModel');
 const UserProgress = require('../models/UserProgressModel');
 const AI = require('../models/AIModel');
-const Achievement = require('../models/AchievementModel');
 const os = require('os');
 
 const getStatistic = async (req, res) => {
@@ -10,7 +9,6 @@ const getStatistic = async (req, res) => {
         const totalUsers = await Account.countDocuments({ role: { $ne: 'admin' } });
         const totalSubjects = await Subject.countDocuments();
         const totalAIInteractions = await AI.countDocuments();
-        const totalAchievements = await Achievement.countDocuments();
         
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -48,8 +46,7 @@ const getStatistic = async (req, res) => {
             overview: {
                 totalUsers,
                 totalSubjects,
-                totalAIInteractions,
-                totalAchievements
+                totalAIInteractions
             },
             recent: {
                 newUsers: recentUsers,

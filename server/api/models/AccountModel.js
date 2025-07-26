@@ -30,18 +30,7 @@ const accountSchema = new mongoose.Schema(
         
         avatar: {
             type: String,
-            default: 'client/src/assets/avatar/astronaunt.jpg'
-        },
-        
-        currentLevel: {
-            type: Number,
-            default: 1,
-            min: 1
-        },
-        
-        experience: {
-            type: Number,
-            default: 0
+            default: null
         },
         
         completedQuestions: [{
@@ -53,16 +42,6 @@ const accountSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Exam'
         }],
-        
-        achievements: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Achievement'
-        }],
-        
-        rewards: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Reward'
-        }],
 
         createdAt: {
             type: Date,
@@ -73,11 +52,6 @@ const accountSchema = new mongoose.Schema(
             type: Date,
             default: Date.now
         },
-
-        streak: {
-            type: Number,
-            default: 0
-        }
     },
     {
         versionKey: false,

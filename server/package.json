@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/speech": "^7.2.0",
     "@google/generative-ai": "^0.24.1",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.0",
@@ -24,11 +25,17 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.9.1",
     "mongoose": "^8.16.3",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^1.1.1",
+    "pptx2json": "^0.0.10",
     "rate-limit-redis": "^4.2.0",
     "redis": "^4.6.0",
-    "response-time": "^2.3.2"
+    "response-time": "^2.3.2",
+    "speech-to-text-api": "^1.0.3",
+    "youtube-dl-exec": "^3.0.22"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",

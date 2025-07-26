@@ -6,6 +6,7 @@
            :class="`particle particle-${i} ${getParticleSize(i)} ${getParticleColor(i)}`">
       </div>
     </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
@@ -33,100 +34,58 @@
       <div class="main-content">
         <header class="dashboard-header">
           <div class="header-content">
-            <h1 class="space-text-primary space-glow">Welcome back, {{ userName }}!</h1>
-            <p class="space-text-secondary">Ready to continue your learning journey?</p>
-          </div>
-          <div class="header-actions">
-            <button class="notification-btn">
-              <i class="icon fas fa-bell"></i>
-              <span class="notification-badge">3</span>
-            </button>
+            <h1 class="space-text-primary space-glow">Dashboard</h1>
+            <p class="space-text-secondary">Create new notes</p>
           </div>
         </header>
         
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-            <div class="stat-content">
-              <h3>{{ userStats.experience }}</h3>
-              <p>Total XP</p>
+        <!-- AI Study Tools Grid -->
+        <div class="study-tools-grid">
+          <!-- Record or Upload Audio -->
+          <div class="tool-card audio-card" @click="openAudioModal">
+            <div class="tool-icon">
+              <i class="fas fa-microphone"></i>
+            </div>
+            <div class="tool-content">
+              <h3>Record or upload audio</h3>
+              <p>Upload an audio file</p>
+            </div>
+            <div class="tool-arrow">
+              <i class="fas fa-chevron-right"></i>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-fire"></i></div>
-            <div class="stat-content">
-              <h3>{{ userStats.streak }}</h3>
-              <p>Day Streak</p>
+
+          <!-- YouTube Video -->
+          <div class="tool-card youtube-card" @click="openYouTubeModal">
+            <div class="tool-icon youtube-icon">
+              <i class="fab fa-youtube"></i>
+            </div>
+            <div class="tool-content">
+              <h3>YouTube video</h3>
+              <p>Paste a YouTube link</p>
+            </div>
+            <div class="tool-arrow">
+              <i class="fas fa-chevron-right"></i>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-content">
-              <h3>{{ userStats.completedQuestions }}</h3>
-              <p>Questions Solved</p>
+
+          <!-- Document Upload -->
+          <div class="tool-card document-card" @click="openDocumentModal">
+            <div class="tool-icon document-icon">
+              <i class="fas fa-file-alt"></i>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-trophy"></i></div>
-            <div class="stat-content">
-              <h3>{{ userStats.achievements }}</h3>
-              <p>Achievements</p>
+            <div class="tool-content">
+              <h3>Document upload</h3>
+              <p>Any PDF, DOC, PPT, etc!</p>
             </div>
-          </div>
-        </div>
-        
-        <!-- Subject and Level Information -->
-        <div class="subject-level-section">
-          <div class="section-row">
-            <!-- Current Level Progress -->
-            <div class="level-progress-card">
-              <h2><i class="fas fa-star"></i> Level Progress</h2>
-              <div class="level-info">
-                <div class="current-level">
-                  <span class="level-number">{{ userLevel }}</span>
-                  <span class="level-label">Current Level</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" :style="{ width: levelProgress + '%' }"></div>
-                </div>
-                <div class="progress-text">
-                  <span>{{ userStats.experience }} / {{ nextLevelXP }} XP</span>
-                  <span class="next-level">Level {{ userLevel + 1 }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Today's Schedule -->
-            <div class="schedule-card space-card">
-              <h2 class="space-text-primary"><i class="fas fa-calendar"></i> Today's Schedule</h2>
-              <div class="schedule-events">
-                <div class="schedule-event" v-for="event in todayEvents" :key="event.id" @click="openSchedule">
-                  <div class="event-time space-text-secondary">
-                    {{ event.startTime }}
-                  </div>
-                  <div class="event-details">
-                    <h4 class="space-text-primary">{{ event.title }}</h4>
-                    <p class="space-text-muted">{{ event.description }}</p>
-                    <span :class="['event-type', `event-${event.type}`]">
-                      <i :class="getEventIcon(event.type)"></i> {{ event.type }}
-                    </span>
-                  </div>
-                </div>
-                <div v-if="todayEvents.length === 0" class="no-events space-text-muted">
-                  <i class="fas fa-calendar-times"></i>
-                  <p>No events scheduled for today</p>
-                </div>
-              </div>
-              <button class="view-schedule-btn space-button" @click="openSchedule">
-                <i class="fas fa-calendar"></i> View Full Schedule
-              </button>
+            <div class="tool-arrow">
+              <i class="fas fa-chevron-right"></i>
             </div>
           </div>
         </div>
-        
-        <!-- Recent Notes -->
-        <div class="notes-section">
+
+        <!-- Recent Notes Section -->
+        <div class="notes-section" v-if="recentNotes.length > 0">
           <div class="section-header">
             <h2><i class="fas fa-sticky-note"></i> Recent Notes</h2>
             <router-link to="/notes" class="view-all-btn">
@@ -151,67 +110,166 @@
                 </div>
               </div>
             </div>
-            <div class="create-note-card" @click="createNewNote">
-              <div class="create-note-content">
-                <i class="fas fa-plus"></i>
-                <h4>Create New Note</h4>
-                <p>Add a new study note</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <h2>Quick Actions</h2>
-          <div class="actions-grid">
-            <div class="action-card" @click="startLearning">
-              <div class="action-icon"><i class="fas fa-rocket"></i></div>
-              <h3>Start Learning</h3>
-              <p>Continue where you left off</p>
-            </div>
-            <div class="action-card" @click="takeExam">
-              <div class="action-icon"><i class="fas fa-file-alt"></i></div>
-              <h3>Take Exam</h3>
-              <p>Test your knowledge</p>
-            </div>
-            <div class="action-card" @click="askAI">
-              <div class="action-icon"><i class="fas fa-robot"></i></div>
-              <h3>Ask AI Tutor</h3>
-              <p>Get instant help</p>
-            </div>
-            <div class="action-card" @click="viewProgress">
-              <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
-              <h3>View Progress</h3>
-              <p>Track your improvement</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Recent Activity -->
-        <div class="recent-activity">
-          <h2>Recent Activity</h2>
-          <div class="activity-list">
-            <div class="activity-item" v-for="activity in recentActivities" :key="activity.id">
-              <div class="activity-icon"><i :class="activity.iconClass"></i></div>
-              <div class="activity-content">
-                <h4>{{ activity.title }}</h4>
-                <p>{{ activity.description }}</p>
-                <span class="activity-time">{{ activity.time }}</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </template>
+
+    <!-- Audio Upload Modal -->
+    <div v-if="showAudioModal" class="modal-overlay" @click="closeAudioModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3><i class="fas fa-microphone"></i> Record or Upload Audio</h3>
+          <button @click="closeAudioModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="upload-options">
+            <!-- File Upload -->
+            <div class="upload-section">
+              <div class="upload-area" 
+                   :class="{ 'drag-over': isDragOver }"
+                   @drop="handleAudioDrop"
+                   @dragover.prevent="isDragOver = true"
+                   @dragleave="isDragOver = false"
+                   @click="triggerAudioFileInput">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag .mp3 audio file here, or click to select</p>
+                <input ref="audioFileInput" type="file" accept=".mp3,.wav,.m4a" @change="handleAudioFileSelect" style="display: none;">
+              </div>
+            </div>
+            
+            <!-- Recording Section -->
+            <div class="recording-section">
+              <div class="record-controls">
+                <button v-if="!isRecording && !audioBlob" @click="startRecording" class="record-btn">
+                  <i class="fas fa-microphone"></i> Start Recording
+                </button>
+                <button v-if="isRecording" @click="stopRecording" class="stop-btn">
+                  <i class="fas fa-stop"></i> Stop Recording
+                </button>
+                <button v-if="audioBlob && !isRecording" @click="playRecording" class="play-btn">
+                  <i class="fas fa-play"></i> Play Recording
+                </button>
+              </div>
+              <div v-if="isRecording" class="recording-indicator">
+                <div class="pulse-dot"></div>
+                <span>Recording... {{ recordingTime }}s</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button @click="closeAudioModal" class="cancel-btn">Cancel</button>
+            <button @click="processAudio" :disabled="!selectedAudioFile && !audioBlob" class="process-btn">
+              <i class="fas fa-magic"></i> Process with AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YouTube Modal -->
+    <div v-if="showYouTubeModal" class="modal-overlay" @click="closeYouTubeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3><i class="fab fa-youtube"></i> YouTube Video</h3>
+          <button @click="closeYouTubeModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="input-section">
+            <label for="youtube-url">YouTube URL</label>
+            <input 
+              id="youtube-url"
+              v-model="youtubeUrl" 
+              type="url" 
+              placeholder="https://www.youtube.com/watch?v=..."
+              class="url-input"
+            >
+            <div v-if="youtubeUrl && isValidYouTubeUrl(youtubeUrl)" class="url-preview">
+              <i class="fab fa-youtube"></i>
+              <span>Valid YouTube URL detected</span>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button @click="closeYouTubeModal" class="cancel-btn">Cancel</button>
+            <button @click="processYouTube" :disabled="!youtubeUrl || !isValidYouTubeUrl(youtubeUrl)" class="process-btn">
+              <i class="fas fa-magic"></i> Process with AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document Upload Modal -->
+    <div v-if="showDocumentModal" class="modal-overlay" @click="closeDocumentModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3><i class="fas fa-file-alt"></i> Document Upload</h3>
+          <button @click="closeDocumentModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="upload-section">
+            <div class="upload-area" 
+                 :class="{ 'drag-over': isDragOverDoc }"
+                 @drop="handleDocumentDrop"
+                 @dragover.prevent="isDragOverDoc = true"
+                 @dragleave="isDragOverDoc = false"
+                 @click="triggerDocumentFileInput">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Drag PDF, DOC, PPT files here, or click to select</p>
+              <input ref="documentFileInput" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" @change="handleDocumentFileSelect" style="display: none;">
+            </div>
+            
+            <div v-if="selectedDocumentFile" class="file-preview">
+              <div class="file-info">
+                <i :class="getFileIcon(selectedDocumentFile.name)"></i>
+                <div class="file-details">
+                  <span class="file-name">{{ selectedDocumentFile.name }}</span>
+                  <span class="file-size">{{ formatFileSize(selectedDocumentFile.size) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button @click="closeDocumentModal" class="cancel-btn">Cancel</button>
+            <button @click="processDocument" :disabled="!selectedDocumentFile" class="process-btn">
+              <i class="fas fa-magic"></i> Process with AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processing Modal -->
+    <div v-if="showProcessingModal" class="modal-overlay">
+      <div class="modal-content processing-modal">
+        <div class="processing-content">
+          <div class="processing-spinner">
+            <i class="fas fa-magic fa-spin"></i>
+          </div>
+          <h3>AI is processing your content...</h3>
+          <p>{{ processingMessage }}</p>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: processingProgress + '%' }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { getAccount } from '@/api/Account';
-import { getUserProgress } from '@/api/UserProgress';
-import { getUserNotes } from '@/api/Note';
-import { getTodaySchedules } from '@/api/Schedule';
+import { getAccount, getUserIdFromToken } from '@/api/Account';
+import { getUserNotes, createNote } from '@/api/Note';
+import { processYouTubeVideo, processDocument, processAudio } from '@/api/AI';
 import Sidebar from '@/components/Sidebar.vue';
 import { useNotification } from '@/composables/useNotification';
 
@@ -232,26 +290,44 @@ export default {
   data() {
     return {
       userName: 'Loading...',
-      userLevel: 1,
       userEmail: '',
       userId: null,
-      userStats: {
-        experience: 0,
-        streak: 0,
-        completedQuestions: 0,
-        achievements: 0
-      },
-      levelProgress: 0,
-      nextLevelXP: 1000,
-      todayEvents: [],
+      userLevel: 1,
       recentNotes: [],
-      recentActivities: [],
       loading: true,
-      error: null
+      error: null,
+      
+      // Modal states
+      showAudioModal: false,
+      showYouTubeModal: false,
+      showDocumentModal: false,
+      showProcessingModal: false,
+      
+      // Audio recording
+      isRecording: false,
+      mediaRecorder: null,
+      audioBlob: null,
+      recordingTime: 0,
+      recordingTimer: null,
+      selectedAudioFile: null,
+      isDragOver: false,
+      
+      // YouTube
+      youtubeUrl: '',
+      
+      // Document upload
+      selectedDocumentFile: null,
+      isDragOverDoc: false,
+      
+      // Processing
+      processingMessage: '',
+      processingProgress: 0,
+      isProcessing: false
     }
   },
   async mounted() {
     await this.loadUserData();
+    await this.loadRecentNotes();
   },
   methods: {
     getParticleSize(index) {
@@ -262,104 +338,30 @@ export default {
       const colors = ['blue', 'purple', 'pink', 'cyan'];
       return colors[index % 4];
     },
-    // Helper function to decode JWT token and get user ID
-    getUserIdFromToken() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return null;
-        
-        // Decode JWT token (simple base64 decode for payload)
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.id;
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        this.showError('Error decoding authentication token');
-        return null;
-      }
-    },
     
     async loadUserData() {
       try {
         this.loading = true;
         this.error = null;
-        
+
         // Get user ID from JWT token
-        const userId = this.getUserIdFromToken();
+        const userId = await getUserIdFromToken();
         if (!userId) {
           throw new Error('No valid user token found');
         }
-        
         this.userId = userId;
-        
+
         // Fetch user account data
         const accountData = await getAccount(userId);
         this.userName = accountData.username;
         this.userEmail = accountData.email;
-        this.userLevel = accountData.currentLevel;
-        this.userAvatar = accountData.avatar;
-        
-        // Update user stats from account data
-        this.userStats.experience = accountData.experience || 0;
-        this.userStats.completedQuestions = accountData.completedQuestions?.length || 0;
-        this.userStats.achievements = accountData.achievements?.length || 0;
-        
-        // Calculate level progress
-        this.calculateLevelProgress();
-        
-        // Fetch user progress data
-        try {
-          const progressData = await getUserProgress(userId);
-          if (progressData && progressData.studyStreak) {
-            this.userStats.streak = progressData.studyStreak.currentStreak || 0;
-          }
-          
-          // Update recent activities based on progress data
-          if (progressData && progressData.examHistory) {
-            this.updateRecentActivities(progressData);
-          }
-        } catch (progressError) {
-          console.warn('Could not load user progress:', progressError);
-          // Continue without progress data
-        }
-        
-        // Fetch today's schedule events
-        try {
-          const scheduleData = await getTodaySchedules(userId);
-          this.todayEvents = scheduleData.map(schedule => ({
-            id: schedule._id,
-            title: schedule.title,
-            description: schedule.description,
-            startTime: schedule.time,
-            type: schedule.type
-          }));
-        } catch (scheduleError) {
-          console.error('Error loading schedule data:', scheduleError);
-          this.showWarning('Could not load today\'s schedule');
-          this.todayEvents = [];
-        }
-        
-        // Fetch recent notes
-        try {
-          const notesData = await getUserNotes(userId);
-          this.recentNotes = notesData.slice(0, 6).map(note => ({
-            id: note._id,
-            title: note.title,
-            content: note.content,
-            category: note.category,
-            isFavorite: note.isFavorite,
-            updatedAt: note.date_updated || note.updatedAt
-          }));
-        } catch (notesError) {
-          console.error('Error loading notes data:', notesError);
-          this.showWarning('Could not load recent notes');
-          this.recentNotes = [];
-        }
-        
+        this.userLevel = accountData.currentLevel || 1;
+
       } catch (error) {
         console.error('Error loading user data:', error);
         this.error = 'Failed to load user data';
         this.showError('Failed to load user data');
-        
+
         // If token is invalid, redirect to login
         if (error.message.includes('token') || error.response?.status === 401) {
           localStorage.removeItem('token');
@@ -369,165 +371,443 @@ export default {
         this.loading = false;
       }
     },
-    
-    updateRecentActivities(progressData) {
-      const activities = [];
-      
-      // Add recent exam completions
-      if (progressData.examHistory && progressData.examHistory.length > 0) {
-        const recentExams = progressData.examHistory
-          .sort((a, b) => new Date(b.dateTaken) - new Date(a.dateTaken))
-          .slice(0, 2);
-          
-        recentExams.forEach(exam => {
-          activities.push({
-            id: `exam-${exam.examId}`,
-            iconClass: exam.passed ? 'fas fa-check-circle' : 'fas fa-file-alt',
-            title: exam.passed ? 'Exam Passed!' : 'Exam Completed',
-            description: `Scored ${exam.score}% ${exam.passed ? '- Well done!' : '- Keep practicing!'}`,
-            time: this.formatTimeAgo(exam.dateTaken)
-          });
-        });
-      }
-      
-      // Add study streak info
-      if (progressData.studyStreak && progressData.studyStreak.currentStreak > 0) {
-        activities.push({
-          id: 'streak',
-          iconClass: 'fas fa-fire',
-          title: 'Study Streak Active',
-          description: `${progressData.studyStreak.currentStreak} days in a row!`,
-          time: this.formatTimeAgo(progressData.studyStreak.lastStudyDate)
-        });
-      }
-      
-      // Update recent activities if we have new data
-      if (activities.length > 0) {
-        this.recentActivities = [...activities, ...this.recentActivities].slice(0, 5);
+
+    async loadRecentNotes() {
+      try {
+        if (!this.userId) return;
+        
+        const notesResponse = await getUserNotes(this.userId);
+        const notesData = notesResponse.data || notesResponse || [];
+        
+        if (Array.isArray(notesData)) {
+          this.recentNotes = notesData.slice(0, 6).map(note => ({
+            id: note._id,
+            title: note.title,
+            content: note.content,
+            category: note.category,
+            isFavorite: note.isFavorite,
+            updatedAt: note.date_updated || note.updatedAt
+          }));
+        } else {
+          console.warn('Notes data is not an array:', notesData);
+          this.recentNotes = [];
+        }
+      } catch (error) {
+        console.error('Error loading notes:', error);
+        this.showWarning('Could not load recent notes');
+        this.recentNotes = [];
       }
     },
-    
-    formatTimeAgo(dateString) {
-      if (!dateString) return 'Recently';
-      
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-      
-      if (diffInHours < 1) return 'Just now';
-      if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-      
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-      
-      return date.toLocaleDateString();
+
+    getUserIdFromToken() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+      }
     },
     
-    startLearning() {
-      this.$router.push('/learning');
-    },
-    takeExam() {
-      this.$router.push('/exams');
-    },
-    askAI() {
-      this.$router.push('/ai-tutor');
-    },
-    viewProgress() {
-      this.$router.push('/progress');
-    },
     logout() {
-      // Clear authentication token
       localStorage.removeItem('token');
-      // Redirect to login
       this.$router.push('/login');
     },
     
-    calculateLevelProgress() {
-      // Calculate XP needed for next level (exponential growth)
-      const baseXP = 1000;
-      const currentLevelXP = baseXP * Math.pow(1.5, this.userLevel - 1);
-      this.nextLevelXP = Math.floor(baseXP * Math.pow(1.5, this.userLevel));
+    // Modal methods
+    openAudioModal() {
+      this.showAudioModal = true;
+      this.resetAudioState();
+    },
+    
+    closeAudioModal() {
+      this.showAudioModal = false;
+      this.stopRecording();
+      this.resetAudioState();
+    },
+    
+    openYouTubeModal() {
+      this.showYouTubeModal = true;
+      this.youtubeUrl = '';
+    },
+    
+    closeYouTubeModal() {
+      this.showYouTubeModal = false;
+      this.youtubeUrl = '';
+    },
+    
+    openDocumentModal() {
+      this.showDocumentModal = true;
+      this.selectedDocumentFile = null;
+    },
+    
+    closeDocumentModal() {
+      this.showDocumentModal = false;
+      this.selectedDocumentFile = null;
+    },
+    
+    // Audio recording methods
+    async startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.mediaRecorder = new MediaRecorder(stream);
+        const audioChunks = [];
+        
+        this.mediaRecorder.ondataavailable = (event) => {
+          audioChunks.push(event.data);
+        };
+        
+        this.mediaRecorder.onstop = () => {
+          this.audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        this.mediaRecorder.start();
+        this.isRecording = true;
+        this.recordingTime = 0;
+        
+        this.recordingTimer = setInterval(() => {
+          this.recordingTime++;
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        this.showError('Could not access microphone');
+      }
+    },
+    
+    stopRecording() {
+      if (this.mediaRecorder && this.isRecording) {
+        this.mediaRecorder.stop();
+        this.isRecording = false;
+        
+        if (this.recordingTimer) {
+          clearInterval(this.recordingTimer);
+          this.recordingTimer = null;
+        }
+      }
+    },
+    
+    playRecording() {
+      if (this.audioBlob) {
+        const audio = new Audio(URL.createObjectURL(this.audioBlob));
+        audio.play();
+      }
+    },
+    
+    resetAudioState() {
+      this.selectedAudioFile = null;
+      this.audioBlob = null;
+      this.recordingTime = 0;
+      this.isDragOver = false;
+    },
+    
+    // File handling methods
+    triggerAudioFileInput() {
+      this.$refs.audioFileInput.click();
+    },
+    
+    handleAudioFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedAudioFile = file;
+      }
+    },
+    
+    handleAudioDrop(event) {
+      event.preventDefault();
+      this.isDragOver = false;
       
-      // Calculate progress percentage
-      const xpInCurrentLevel = this.userStats.experience - currentLevelXP;
-      const xpNeededForNextLevel = this.nextLevelXP - currentLevelXP;
-      this.levelProgress = Math.max(0, Math.min(100, (xpInCurrentLevel / xpNeededForNextLevel) * 100));
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('audio/')) {
+          this.selectedAudioFile = file;
+        } else {
+          this.showError('Please select an audio file');
+        }
+      }
     },
     
-    openSchedule() {
-      this.$router.push('/schedule');
+    triggerDocumentFileInput() {
+      this.$refs.documentFileInput.click();
     },
     
-    getEventIcon(eventType) {
+    handleDocumentFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedDocumentFile = file;
+      }
+    },
+    
+    handleDocumentDrop(event) {
+      event.preventDefault();
+      this.isDragOverDoc = false;
+      
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        const allowedTypes = ['.pdf', '.doc', '.docx', '.ppt', '.pptx'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (allowedTypes.includes(fileExtension)) {
+          this.selectedDocumentFile = file;
+        } else {
+          this.showError('Please select a PDF, DOC, or PPT file');
+        }
+      }
+    },
+    
+    // Processing methods
+    async processAudio() {
+      if (!this.selectedAudioFile && !this.audioBlob) {
+        this.showError('Please select an audio file or record audio');
+        return;
+      }
+      
+      this.startProcessing('Processing audio and generating notes...');
+      this.closeAudioModal();
+      
+      try {
+        this.updateProgress(20);
+        
+        // Use either uploaded file or recorded blob
+        const audioToProcess = this.selectedAudioFile || this.audioBlob;
+        const result = await processAudio(audioToProcess);
+        this.updateProgress(70);
+        
+        if (result && result.success && result.note) {
+          const noteData = {
+            title: result.note.title || 'Audio Notes',
+            content: result.note.content || 'No content available',
+            category: 'Audio Notes',
+            userId: this.userId
+          };
+          
+          this.updateProgress(90);
+          await createNote(noteData);
+          this.updateProgress(100);
+          
+          this.showSuccess('Audio processed successfully! Notes have been created.');
+          await this.loadRecentNotes();
+        } else {
+          throw new Error(result?.error || 'Failed to process audio - no valid response');
+        }
+        
+      } catch (error) {
+        console.error('Audio processing error:', error);
+        
+        if (error.message.includes('timeout')) {
+          this.showError('Processing timeout. The audio file might be too large.');
+        } else if (error.message.includes('Network error')) {
+          this.showError('Network error. Please check your internet connection.');
+        } else {
+          this.showError(`Failed to process audio: ${error.message}`);
+        }
+      } finally {
+        this.stopProcessing();
+        this.resetAudioState();
+      }
+    },
+    
+    async processYouTube() {
+      // Enhanced validation
+      if (!this.youtubeUrl || typeof this.youtubeUrl !== 'string' || this.youtubeUrl.trim() === '') {
+        this.showError('Please enter a YouTube URL');
+        return;
+      }
+      
+      const trimmedUrl = this.youtubeUrl.trim();
+      if (!this.isValidYouTubeUrl(trimmedUrl)) {
+        this.showError('Please enter a valid YouTube URL');
+        return;
+      }
+      
+      this.startProcessing('Processing YouTube video and generating notes...');
+      this.closeYouTubeModal();
+      
+      try {
+        this.updateProgress(20);
+        
+        // Pass the trimmed URL to ensure it's clean
+        const result = await processYouTubeVideo(trimmedUrl);
+        this.updateProgress(70);
+        
+        if (result && result.success && result.note) {
+          const noteData = {
+            title: result.note.title || 'YouTube Video Notes',
+            content: result.note.content || 'No content available',
+            category: 'YouTube Notes',
+            userId: this.userId
+          };
+          
+          this.updateProgress(90);
+          await createNote(noteData);
+          this.updateProgress(100);
+          
+          this.showSuccess('YouTube video processed successfully! Notes have been created.');
+          await this.loadRecentNotes();
+        } else {
+          throw new Error(result?.error || 'Failed to process YouTube video - no valid response');
+        }
+        
+      } catch (error) {
+        console.error('YouTube processing error:', error);
+        
+        // Enhanced error handling
+        if (error.message.includes('YouTube URL is required')) {
+          this.showError('Invalid YouTube URL. Please check the URL and try again.');
+        } else if (error.message.includes('timeout')) {
+          this.showError('Processing timeout. The video might be too long or the server is busy.');
+        } else if (error.message.includes('Network error')) {
+          this.showError('Network error. Please check your internet connection.');
+        } else {
+          this.showError(`Failed to process YouTube video: ${error.message}`);
+        }
+      } finally {
+        this.stopProcessing();
+        this.youtubeUrl = '';
+      }
+    },
+    
+    async processDocument() {
+      if (!this.selectedDocumentFile) {
+        this.showError('Please select a document file');
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+      if (!allowedTypes.includes(this.selectedDocumentFile.type)) {
+        this.showError('Please select a valid document file (PDF, DOC, DOCX, PPT, PPTX)');
+        return;
+      }
+      
+      this.startProcessing('Processing document and generating notes...');
+      this.closeDocumentModal();
+      
+      try {
+        this.updateProgress(20);
+        const result = await processDocument(this.selectedDocumentFile);
+        this.updateProgress(70);
+        
+        if (result && result.success && result.note) {
+          const noteData = {
+            title: result.note.title || `Document Notes - ${this.selectedDocumentFile.name}`,
+            content: result.note.content || 'No content available',
+            category: 'Document Notes',
+            userId: this.userId
+          };
+          
+          this.updateProgress(90);
+          await createNote(noteData);
+          this.updateProgress(100);
+          
+          this.showSuccess('Document processed successfully! Notes have been created.');
+          await this.loadRecentNotes();
+        } else {
+          throw new Error(result?.error || 'Failed to process document - no valid response');
+        }
+        
+      } catch (error) {
+        console.error('Document processing error:', error);
+        
+        if (error.message.includes('timeout')) {
+          this.showError('Processing timeout. The document might be too large or complex.');
+        } else if (error.message.includes('Network error')) {
+          this.showError('Network error. Please check your internet connection.');
+        } else {
+          this.showError(`Failed to process document: ${error.message}`);
+        }
+      } finally {
+        this.stopProcessing();
+        this.selectedDocumentFile = null;
+      }
+    },
+    
+    // Processing helper methods
+    startProcessing(message) {
+      this.isProcessing = true;
+      this.showProcessingModal = true;
+      this.processingMessage = message;
+      this.processingProgress = 0;
+    },
+    
+    updateProgress(progress) {
+      this.processingProgress = progress;
+    },
+    
+    stopProcessing() {
+      this.isProcessing = false;
+      this.showProcessingModal = false;
+      this.processingProgress = 0;
+      this.processingMessage = '';
+    },
+    
+    // Utility methods
+    // Enhanced YouTube URL validation
+    isValidYouTubeUrl(url) {
+      if (!url || typeof url !== 'string') return false;
+      
+      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/;
+      return youtubeRegex.test(url.trim());
+    },
+    
+    getFileIcon(fileName) {
+      const extension = fileName.split('.').pop().toLowerCase();
       const iconMap = {
-        'exam': 'fas fa-clipboard-check',
-        'study': 'fas fa-book-open',
-        'lab': 'fas fa-flask',
-        'lecture': 'fas fa-chalkboard-teacher',
-        'assignment': 'fas fa-file-alt',
-        'meeting': 'fas fa-users'
+        pdf: 'fas fa-file-pdf',
+        doc: 'fas fa-file-word',
+        docx: 'fas fa-file-word',
+        ppt: 'fas fa-file-powerpoint',
+        pptx: 'fas fa-file-powerpoint',
+        default: 'fas fa-file'
       };
-      return iconMap[eventType] || 'fas fa-calendar';
+      return iconMap[extension] || iconMap.default;
     },
     
-    // Note-related methods
+    formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+    
+    // Note methods
     openNote(noteId) {
-      this.$router.push(`/notes/${noteId}`);
-    },
-    
-    createNewNote() {
-      this.$router.push('/notes/new');
+      if (noteId) {
+        this.$router.push({ path: '/notes', query: { noteId: noteId } });
+      } else {
+        console.error('Note ID is undefined');
+        this.showError('Unable to open note - invalid note ID');
+      }
     },
     
     async toggleNoteFavorite(note) {
       try {
         const { toggleNoteFavorite } = await import('../../api/Note.js');
         const updatedNote = await toggleNoteFavorite(note.id);
-        note.isFavorite = updatedNote.isFavorite;
+        note.isFavorite = updatedNote.data.isFavorite;
+        this.showSuccess(`Note ${note.isFavorite ? 'added to' : 'removed from'} favorites`);
       } catch (error) {
         console.error('Error toggling note favorite:', error);
-        // Revert the change if API call fails
         note.isFavorite = !note.isFavorite;
+        
+        if (error.response?.status === 404) {
+          this.showError('Note not found');
+        } else if (error.code === 'ERR_NETWORK') {
+          this.showError('Unable to connect to server. Please check your connection.');
+        } else {
+          this.showError('Failed to update note favorite status');
+        }
       }
     },
     
     truncateNoteContent(content) {
       return content.length > 80 ? content.substring(0, 80) + '...' : content;
-    },
-    
-    getSubjectIcon(subjectName) {
-      const iconMap = {
-        'Mathematics': 'fas fa-calculator',
-        'Math': 'fas fa-calculator',
-        'Physics': 'fas fa-atom',
-        'Chemistry': 'fas fa-flask',
-        'Biology': 'fas fa-dna',
-        'Computer Science': 'fas fa-laptop-code',
-        'Programming': 'fas fa-code',
-        'History': 'fas fa-landmark',
-        'Geography': 'fas fa-globe',
-        'Literature': 'fas fa-book',
-        'English': 'fas fa-language',
-        'Art': 'fas fa-palette',
-        'Music': 'fas fa-music',
-        'Economics': 'fas fa-chart-line',
-        'Psychology': 'fas fa-brain'
-      };
-      
-      // Try exact match first
-      if (iconMap[subjectName]) {
-        return iconMap[subjectName];
-      }
-      
-      // Try partial match
-      for (const [key, icon] of Object.entries(iconMap)) {
-        if (subjectName.toLowerCase().includes(key.toLowerCase())) {
-          return icon;
-        }
-      }
-      
-      // Default icon
-      return 'fas fa-book';
     },
     
     formatNoteDate(date) {
@@ -539,185 +819,129 @@ export default {
   }
 }
 </script>
+
 <style scoped>
-.learning-container {
+/* Base Styles */
+.dashboard-container {
   display: flex;
   min-height: 100vh;
   position: relative;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  overflow: hidden;
 }
 
-/* Sidebar Styles */
-.sidebar {
-  width: 280px;
+/* Space Background */
+.space-background {
+  position: relative;
+}
+
+.space-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle.small { width: 4px; height: 4px; }
+.particle.medium { width: 6px; height: 6px; }
+.particle.large { width: 8px; height: 8px; }
+
+.particle.blue { background: rgba(100, 200, 255, 0.6); }
+.particle.purple { background: rgba(150, 100, 255, 0.6); }
+.particle.pink { background: rgba(255, 100, 200, 0.6); }
+.particle.cyan { background: rgba(100, 255, 200, 0.6); }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* Generate random positions for particles */
+.particle-1 { top: 10%; left: 10%; animation-delay: 0s; }
+.particle-2 { top: 20%; left: 80%; animation-delay: 1s; }
+.particle-3 { top: 80%; left: 20%; animation-delay: 2s; }
+.particle-4 { top: 60%; left: 90%; animation-delay: 3s; }
+.particle-5 { top: 30%; left: 60%; animation-delay: 4s; }
+.particle-6 { top: 90%; left: 70%; animation-delay: 5s; }
+.particle-7 { top: 15%; left: 40%; animation-delay: 0.5s; }
+.particle-8 { top: 70%; left: 15%; animation-delay: 1.5s; }
+.particle-9 { top: 40%; left: 85%; animation-delay: 2.5s; }
+.particle-10 { top: 85%; left: 45%; animation-delay: 3.5s; }
+.particle-11 { top: 25%; left: 25%; animation-delay: 4.5s; }
+.particle-12 { top: 65%; left: 75%; animation-delay: 5.5s; }
+.particle-13 { top: 5%; left: 55%; animation-delay: 0.8s; }
+.particle-14 { top: 75%; left: 5%; animation-delay: 1.8s; }
+.particle-15 { top: 45%; left: 95%; animation-delay: 2.8s; }
+.particle-16 { top: 95%; left: 35%; animation-delay: 3.8s; }
+.particle-17 { top: 35%; left: 15%; animation-delay: 4.8s; }
+.particle-18 { top: 55%; left: 65%; animation-delay: 5.8s; }
+.particle-19 { top: 12%; left: 75%; animation-delay: 1.2s; }
+.particle-20 { top: 82%; left: 55%; animation-delay: 2.2s; }
+
+/* Loading and Error States */
+.loading-container, .error-container {
   display: flex;
   flex-direction: column;
-  position: fixed;
+  align-items: center;
+  justify-content: center;
   height: 100vh;
-  z-index: 100;
-}
-
-.sidebar-header {
-  font-size: 1.5rem;
-  padding: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  margin-left: 0.5rem;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.avatar {
-  position: relative;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 2;
-}
-
-.avatar::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: -1;
-}
-
-.user-profile:hover .avatar::before {
-  opacity: 1;
-}
-
-.user-profile:hover .avatar {
-  transform: scale(1.05);
-}
-
-.avatar img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  z-index: 3;
-}
-
-.user-profile:hover .avatar img {
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
-}
-
-.user-info {
-  position: relative;
-  z-index: 2;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.user-profile:hover .user-info {
-  transform: translateX(2px);
-}
-
-.user-info h4 {
   color: white;
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  position: relative;
 }
 
-.user-profile:hover .user-info h4 {
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+.loading-spinner {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #64b5f6;
 }
 
-.user-info p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 0.8rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #f44336;
 }
 
-.user-profile:hover .user-info p {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.user-profile:active {
-  transform: scale(0.98);
-}
-
-.user-profile:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
-}
-
-.user-profile:hover .avatar {
-  transform: scale(1.08);
-}
-
-.user-profile:hover .user-info h4 {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 1.5rem;
-}
-
-.sidebar-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar-footer {
-  padding: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.logout-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: none;
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(45deg, #64b5f6, #42a5f5);
+  color: white;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
   cursor: pointer;
-  border-radius: 10px;
   transition: all 0.3s ease;
 }
 
-.logout-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+.retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
 }
 
-/* Main Content Styles */
+/* Main Content */
 .main-content {
   flex: 1;
   margin-left: 280px;
   padding: 2rem;
   overflow-y: auto;
+  z-index: 5;
+  position: relative;
 }
 
 .dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -725,427 +949,100 @@ export default {
 .header-content h1 {
   color: white;
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
 }
 
 .header-content p {
   color: rgba(255, 255, 255, 0.8);
   margin: 0.5rem 0 0 0;
-}
-
-.notification-btn {
-  position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.notification-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-.notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ff4757;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.stat-icon {
-  font-size: 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stat-content h3 {
-  color: white;
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: bold;
-}
-
-.stat-content p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0.25rem 0 0 0;
-  font-size: 0.9rem;
-}
-
-/* Quick Actions */
-.quick-actions {
-  margin-bottom: 2rem;
-}
-
-.quick-actions h2 {
-  color: white;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
-
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.action-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 1.5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.action-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.action-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.action-card h3 {
-  color: white;
-  margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
 }
 
-.action-card p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-/* Recent Activity */
-.recent-activity h2 {
-  color: white;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
-
-.activity-list {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-icon {
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.activity-content h4 {
-  color: white;
-  margin: 0;
-  font-size: 1rem;
-}
-
-.activity-content p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
-}
-
-.activity-time {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
-}
-
-/* Subject and Level Section Styles */
-.subject-level-section {
-  margin: 2rem 0;
-}
-
-.section-row {
+/* Study Tools Grid */
+.study-tools-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
-.level-progress-card, .schedule-card {
+.tool-card {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
-  padding: 1.5rem;
-}
-
-.level-progress-card h2, .schedule-card h2 {
-  color: white;
-  margin-bottom: 1.5rem;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.level-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.current-level {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.level-number {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.level-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
   overflow: hidden;
 }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ffd700, #ffed4e);
-  border-radius: 6px;
-  transition: width 0.3s ease;
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.progress-text {
-  display: flex;
-  justify-content: space-between;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-}
-
-.next-level {
-  color: #ffd700;
-  font-weight: 600;
-}
-
-.schedule-events {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.schedule-event {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.tool-icon {
+  width: 60px;
+  height: 60px;
   border-radius: 12px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.5rem;
+  color: white;
 }
 
-.schedule-event:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+.audio-card .tool-icon {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
 }
 
-.event-time {
-  font-size: 0.9rem;
-  font-weight: 600;
-  min-width: 80px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.5rem;
+.youtube-card .tool-icon {
+  background: linear-gradient(45deg, #ff0000, #cc0000);
 }
 
-.event-details {
+.document-card .tool-icon {
+  background: linear-gradient(45deg, #4834d4, #686de0);
+}
+
+.tool-content {
   flex: 1;
 }
 
-.event-details h4 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1rem;
-}
-
-.event-details p {
+.tool-content h3 {
+  color: white;
   margin: 0 0 0.5rem 0;
-  font-size: 0.85rem;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-.event-type {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.event-exam {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-}
-
-.event-study {
-  background: rgba(74, 144, 226, 0.2);
-  color: #4a90e2;
-}
-
-.event-lab {
-  background: rgba(123, 201, 111, 0.2);
-  color: #7bc96f;
-}
-
-.no-events {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.no-events i {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.no-events p {
+.tool-content p {
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
   font-size: 0.9rem;
 }
 
-.view-schedule-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  font-size: 0.9rem;
-  cursor: pointer;
+.tool-arrow {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.2rem;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
 }
 
-.view-schedule-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-/* Enhanced Icon Styles */
-.icon {
-  font-size: 1.2rem;
-  width: 1.2rem;
-  text-align: center;
-}
-
-.stat-icon i {
-  font-size: 1.5rem;
-}
-
-.action-icon i {
-  font-size: 2rem;
-}
-
-.activity-icon i {
-  font-size: 1.2rem;
-}
-
-.notification-btn i {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.loading-spinner i {
-  font-size: 2rem;
+.tool-card:hover .tool-arrow {
   color: white;
+  transform: translateX(4px);
 }
 
-.error-icon i {
-  font-size: 2rem;
-  color: #ff4757;
-}
-
-/* Notes Section Styles */
+/* Notes Section */
 .notes-section {
-  margin-bottom: 2rem;
+  margin-top: 3rem;
 }
 
 .section-header {
@@ -1159,80 +1056,86 @@ export default {
   color: white;
   margin: 0;
   font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.section-header h2 i {
+  margin-right: 0.5rem;
+  color: #64b5f6;
 }
 
 .view-all-btn {
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  text-decoration: none;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(100, 181, 246, 0.2);
+  color: #64b5f6;
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 181, 246, 0.3);
+  transition: all 0.3s ease;
   font-size: 0.9rem;
 }
 
 .view-all-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: rgba(100, 181, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.view-all-btn i {
+  margin-right: 0.5rem;
 }
 
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
 .note-card {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
 }
 
 .note-card:hover {
-  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .note-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .note-header h4 {
   color: white;
   margin: 0;
   font-size: 1rem;
+  font-weight: 600;
   flex: 1;
 }
 
 .note-category {
-  background: rgba(102, 126, 234, 0.8);
-  color: white;
+  background: rgba(100, 181, 246, 0.2);
+  color: #64b5f6;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
 }
 
 .note-content p {
   color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   line-height: 1.4;
 }
 
@@ -1240,16 +1143,19 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .note-date {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .note-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
 }
 
 .favorite-btn {
@@ -1260,87 +1166,358 @@ export default {
   padding: 0.25rem;
   border-radius: 4px;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
 }
 
 .favorite-btn:hover {
   color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
 }
 
-.create-note-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.favorite-btn .fas {
+  color: #ff6b6b;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 120px;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
-.create-note-card:hover {
+.modal-content {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.modal-header h3 i {
+  margin-right: 0.5rem;
+  color: #64b5f6;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  color: white;
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.create-note-content {
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.cancel-btn, .process-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.process-btn {
+  background: linear-gradient(45deg, #64b5f6, #42a5f5);
+  color: white;
+}
+
+.process-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+}
+
+.process-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.create-note-content i {
+.upload-area:hover, .upload-area.drag-over {
+  border-color: #64b5f6;
+  background: rgba(100, 181, 246, 0.1);
+}
+
+.upload-area i {
   font-size: 2rem;
-  margin-bottom: 0.5rem;
-  display: block;
+  color: #64b5f6;
+  margin-bottom: 1rem;
 }
 
-.create-note-content h4 {
-  margin: 0 0 0.25rem 0;
+.upload-area p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* Recording Section */
+.recording-section {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.record-controls {
+  margin-bottom: 1rem;
+}
+
+.record-btn, .stop-btn, .play-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.record-btn {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+}
+
+.stop-btn {
+  background: linear-gradient(45deg, #ff4757, #c44569);
+}
+
+.play-btn {
+  background: linear-gradient(45deg, #5f27cd, #341f97);
+}
+
+.record-btn:hover, .stop-btn:hover, .play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Input Section */
+.input-section {
+  margin-bottom: 1rem;
+}
+
+.input-section label {
+  display: block;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.url-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 1rem;
 }
 
-.create-note-content p {
-  margin: 0;
-  font-size: 0.8rem;
+.url-input:focus {
+  outline: none;
+  border-color: #64b5f6;
+  box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.2);
 }
+
+.url-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.url-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(100, 181, 246, 0.1);
+  border-radius: 6px;
+  color: #64b5f6;
+  font-size: 0.9rem;
+}
+
+/* File Preview */
+.file-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-info i {
+  font-size: 1.5rem;
+  color: #64b5f6;
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  display: block;
+  color: white;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.file-size {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+/* Processing Modal */
+.processing-modal {
+  max-width: 400px;
+}
+
+.processing-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.processing-spinner {
+  font-size: 3rem;
+  color: #64b5f6;
+  margin-bottom: 1rem;
+}
+
+.processing-content h3 {
+  color: white;
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+}
+
+.processing-content p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 1.5rem 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(45deg, #64b5f6, #42a5f5);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
   .main-content {
     margin-left: 0;
     padding: 1rem;
   }
   
-  .calendar-header {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .view-toggle {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .form-row {
+  .study-tools-grid {
     grid-template-columns: 1fr;
   }
   
-  .modal {
+  .notes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
     width: 95%;
     margin: 1rem;
   }
-
-  .learning-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
 }
 </style>

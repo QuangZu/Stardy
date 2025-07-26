@@ -41,20 +41,8 @@ const userProgressSchema = new mongoose.Schema(
                 type: Date,
                 default: Date.now
             },
-            timeSpent: Number  // Time in seconds
+            timeSpent: Number
         }],
-        
-        studyStreak: {
-            currentStreak: {
-                type: Number,
-                default: 0
-            },
-            longestStreak: {
-                type: Number,
-                default: 0
-            },
-            lastStudyDate: Date
-        },
         
         aiInteractions: {
             type: Number,

@@ -12,9 +12,6 @@ const QARouter = (app) => {
     app.route('/api/qa/subject/:subjectId')
         .get(QAController.getQAsBySubject);
         
-    app.route('/api/qa/level/:levelId')
-        .get(QAController.getQAsByLevel);
-        
     app.route('/api/qa/answer')
         .post(authenticate, QAController.answerQA);
         

@@ -1,10 +1,9 @@
 const Note = require('../models/NoteModel');
 
 class NoteController {
-    // Get all notes for a user
     static async getAllNotes(req, res) {
         try {
-            const userId = req.user.id;
+            const userId = req.query.userId || req.user.id;
             const notes = await Note.find({ userId }).sort({ date_updated: -1 });
             res.status(200).json({
                 success: true,

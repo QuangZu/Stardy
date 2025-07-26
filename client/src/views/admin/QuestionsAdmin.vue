@@ -49,6 +49,7 @@
                   <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">ID</th>
                   <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Question</th>
                   <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Exam</th>
                   <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th class="px-6 py-3 text-left text-small font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -76,6 +77,14 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       {{ question.subjectName || getSubjectName(question.subjectId) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span v-if="question.examId" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {{ getExamName(question.examId) }}
+                    </span>
+                    <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      No Exam
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -163,6 +172,19 @@
                 </option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="questionExam">Exam (Optional)</label>
+              <select
+                id="questionExam"
+                v-model="newQuestion.examId"
+                class="form-input"
+              >
+                <option value="">No Exam</option>
+                <option v-for="exam in exams" :key="exam._id" :value="exam._id">
+                  {{ exam.title }}
+                </option>
+              </select>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -219,6 +241,19 @@
                 </option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="editQuestionExam">Exam (Optional)</label>
+              <select
+                id="editQuestionExam"
+                v-model="editingQuestion.examId"
+                class="form-input"
+              >
+                <option value="">No Exam</option>
+                <option v-for="exam in exams" :key="exam._id" :value="exam._id">
+                  {{ exam.title }}
+                </option>
+              </select>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -264,6 +299,7 @@ import {
   deleteQA 
 } from '@/api/QA.js'
 import { getAllSubjects } from '@/api/Subject.js'
+import { getAllExams } from '@/api/Exam.js'
 
 export default {
   name: 'QuestionsAdmin',
@@ -294,13 +330,15 @@ export default {
       newQuestion: {
         question: '',
         answer: '',
-        subjectId: ''
+        subjectId: '',
+        examId: ''
       },
       editingQuestion: {
         _id: '',
         question: '',
         answer: '',
-        subjectId: ''
+        subjectId: '',
+        examId: ''
       }
     }
   },
@@ -310,13 +348,15 @@ export default {
       return (this.questions || []).filter(question => 
         (question.question || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         (question.answer || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        (question.subjectName || this.getSubjectName(question.subjectId)).toLowerCase().includes(this.searchQuery.toLowerCase())
+        (question.subjectName || this.getSubjectName(question.subjectId)).toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        this.getExamName(question.examId).toLowerCase().includes(this.searchQuery.toLowerCase())
       )
     }
   },
   mounted() {
     this.fetchQuestions()
     this.fetchSubjects()
+    this.fetchExams()
   },
   methods: {
     async fetchQuestions() {
@@ -340,6 +380,16 @@ export default {
         console.error('Error fetching subjects:', error)
         this.showWarning('Warning', 'Failed to fetch subjects. Some features may be limited.')
         this.subjects = []
+      }
+    },
+    async fetchExams() {
+      try {
+        const response = await getAllExams()
+        this.exams = Array.isArray(response) ? response : (response.data || [])
+      } catch (error) {
+        console.error('Error fetching exams:', error)
+        this.showWarning('Warning', 'Failed to fetch exams. Some features may be limited.')
+        this.exams = []
       }
     },
     getSubjectName(subjectId) {

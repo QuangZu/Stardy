@@ -6,9 +6,6 @@ const UserProgressRouter = (app) => {
         .get(authenticate, UserProgressController.getUserProgress)
         .put(authenticate, UserProgressController.updateUserProgress);
         
-    app.route('/api/progress/streak')
-        .put(authenticate, UserProgressController.updateStudyStreak);
-        
     app.route('/api/progress/subject/:subjectId')
         .put(authenticate, UserProgressController.updateSubjectProgress);
         

@@ -51,7 +51,7 @@ const deleteExam = async (req, res) => {
         if (!deletedExam) {
             return res.status(404).json({ message: "Exam not found" });
         }
-        res.status(204).send();
+        res.status(200).json({ message: 'Exam deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -100,38 +100,17 @@ const submitExam = async (req, res) => {
             await userProgress.save();
         }
         
-        // If passed, add to completed exams and give XP
+        // If passed, add to completed exams
         if (passed) {
             // Check if exam is already completed
             if (!user.completedExams.includes(examId)) {
                 user.completedExams.push(examId);
-                user.experience += exam.experienceReward;
-                
-                // Check if user leveled up
-                const levelUpInfo = await checkLevelUp(user);
-                
                 await user.save();
-                
-                // If this is a boss level exam, unlock rewards
-                let unlockedRewards = [];
-                if (exam.difficulty === 'boss') {
-                    for (const rewardId of exam.rewards) {
-                        if (!user.rewards.includes(rewardId)) {
-                            user.rewards.push(rewardId);
-                            unlockedRewards.push(rewardId);
-                        }
-                    }
-                    await user.save();
-                }
                 
                 return res.status(200).json({
                     message: "Exam submitted successfully",
                     score,
-                    passed,
-                    experienceGained: exam.experienceReward,
-                    levelUp: levelUpInfo.leveledUp,
-                    newLevel: levelUpInfo.leveledUp ? levelUpInfo.newLevel : null,
-                    unlockedRewards
+                    passed
                 });
             }
         }
@@ -143,32 +122,6 @@ const submitExam = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-};
-
-// Helper function to check if user leveled up
-const checkLevelUp = async (user) => {
-    try {
-        const Level = require('../models/LevelModel');
-        
-        // Get the next level
-        const nextLevel = await Level.findOne({ level: user.currentLevel + 1 });
-        
-        // If there's no next level, user is at max level
-        if (!nextLevel) {
-            return { leveledUp: false };
-        }
-        
-        // Check if user has enough XP to level up
-        if (user.experience >= nextLevel.experienceRequired) {
-            user.currentLevel += 1;
-            return { leveledUp: true, newLevel: user.currentLevel };
-        }
-        
-        return { leveledUp: false };
-    } catch (error) {
-        console.error("Error checking level up:", error);
-        return { leveledUp: false };
     }
 };
 

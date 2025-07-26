@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const backendURL = 'https://stardy-3old.onrender.com/api';
+const backendURL = 'http://localhost:3000/api';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -9,8 +9,9 @@ const getAuthHeader = () => {
 
 export const getUserNotes = async (userId) => {
     try {
-        const response = await axios.get(`${backendURL}/notes/user/${userId}`, {
-            headers: getAuthHeader()
+        const response = await axios.get(`${backendURL}/notes`, {
+            headers: getAuthHeader(),
+            params: { userId }
         });
         return response.data;
     } catch (error) {
