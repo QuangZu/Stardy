@@ -1,4 +1,5 @@
 import {
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
@@ -11,7 +12,7 @@ import {
 import { auth, googleProvider } from './config';
 import axios from 'axios';
 
-const BACKEND_URL = 'https://stardy-3old.onrender.com/api';
+const backendURL = 'https://stardy-3old.onrender.com/api';
 
 class FirebaseAuthService {
   constructor() {
@@ -26,60 +27,83 @@ class FirebaseAuthService {
     this.handleRedirectResult();
   }
 
-  // Helper method to create user data object
-  createUserData(user, provider = 'google') {
-    return {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      provider,
-      idToken: null // Will be set separately
-    };
-  }
-
-  // Helper method to handle Google sign-in success
-  async handleGoogleSignInSuccess(user) {
-    const idToken = await user.getIdToken();
-    const userData = this.createUserData(user);
-    userData.idToken = idToken;
-    
-    const backendResponse = await this.registerWithBackend(userData);
-    
-    return {
-      user,
-      backendData: backendResponse,
-      token: backendResponse.token || idToken
-    };
-  }
-
   async handleRedirectResult() {
     try {
       const result = await getRedirectResult(auth);
       if (result && result.user) {
         console.log('Redirect sign-in successful:', result.user.email);
-        
-        const response = await this.handleGoogleSignInSuccess(result.user);
-        
-        if (response.token) {
-          localStorage.setItem('token', response.token);
+
+        // Process the redirect result same as popup
+        const user = result.user;
+        const idToken = await user.getIdToken();
+
+        const userData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          provider: 'google',
+          idToken: idToken
+        };
+
+        const backendResponse = await this.registerWithBackend(userData);
+
+        if (backendResponse.token) {
+          localStorage.setItem('token', backendResponse.token);
           window.dispatchEvent(new CustomEvent('googleSignInSuccess', {
-            detail: response.backendData
+            detail: backendResponse
           }));
         }
       }
     } catch (error) {
       console.error('Redirect result error:', error);
-      window.dispatchEvent(new CustomEvent('googleSignInError', { detail: error }));
+      window.dispatchEvent(new CustomEvent('googleSignInError', {
+        detail: error
+      }));
     }
   }
 
   async signInWithGoogle() {
     try {
+      console.log('Starting Google sign-in...');
+
+      let user = null;
+
+      try {
+       const result = await signInWithPopup(auth, googleProvider);
+        user = result.user;
+        console.log('Popup sign-in successful');
+      } catch (popupError) {
+        console.warn('Popup sign-in failed, trying redirect...', popupError.code);
+
         await signInWithRedirect(auth, googleProvider);
+      }
+      
+      console.log('Google sign-in successful:', user.email);
+      const idToken = await user.getIdToken();
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        provider: 'google',
+        idToken: idToken
+      };
+      
+      const backendResponse = await this.registerWithBackend(userData);
+      
+      return {
+        user: user,
+        backendData: backendResponse,
+        token: backendResponse.token || idToken
+      };
     } catch (error) {
-        console.error('Google sign-in error:', error);
-        throw this.handleAuthError(error);
+      if (error.code === 'auth/popup-blocked' || 
+          error.message.includes('Cross-Origin-Opener-Policy')) {
+        console.warn('Popup blocked or COOP error, falling back to redirect');
+        return await signInWithRedirect(auth, googleProvider);
+      }
+      throw error;
     }
   }
 
@@ -102,8 +126,11 @@ class FirebaseAuthService {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
+      // Update user profile with display name
       if (displayName) {
-        await updateProfile(result.user, { displayName });
+        await updateProfile(result.user, {
+          displayName: displayName
+        });
       }
       
       const idToken = await result.user.getIdToken();
@@ -141,8 +168,9 @@ class FirebaseAuthService {
 
   async registerWithBackend(userData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/auth/google-auth`, userData);
+      const response = await axios.post(`${backendURL}/auth/google-auth`, userData);
       
+      // Store token in localStorage
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
@@ -151,8 +179,11 @@ class FirebaseAuthService {
     } catch (error) {
       console.error('Backend registration error:', error);
       
-      const message = error.response?.data?.message || 'Failed to register with backend';
-      throw new Error(message);
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.message || 'Failed to register with backend');
+      } else {
+        throw new Error('Failed to connect to backend');
+      }
     }
   }
 
@@ -165,14 +196,15 @@ class FirebaseAuthService {
   }
 
   async getCurrentUserToken() {
-    if (!this.currentUser) return null;
-    
-    try {
-      return await this.currentUser.getIdToken();
-    } catch (error) {
-      console.error('Error getting user token:', error);
-      return null;
+    if (this.currentUser) {
+      try {
+        return await this.currentUser.getIdToken();
+      } catch (error) {
+        console.error('Error getting user token:', error);
+        return null;
+      }
     }
+    return null;
   }
 
   onAuthStateChange(callback) {
@@ -194,18 +226,24 @@ class FirebaseAuthService {
   }
 
   handleAuthError(error) {
-    const errorMessages = {
-      'auth/user-not-found': 'No account found with this email address.',
-      'auth/wrong-password': 'Incorrect password. Please try again.',
-      'auth/email-already-in-use': 'An account with this email already exists.',
-      'auth/weak-password': 'Password is too weak. Please choose a stronger password.',
-      'auth/invalid-email': 'Invalid email address format.',
-      'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
-      'auth/network-request-failed': 'Network error. Please check your internet connection.'
-    };
-
-    const message = errorMessages[error.code] || error.message || 'Authentication failed';
-    return new Error(message);
+    switch (error.code) {
+      case 'auth/user-not-found':
+        return new Error('No account found with this email address.');
+      case 'auth/wrong-password':
+        return new Error('Incorrect password. Please try again.');
+      case 'auth/email-already-in-use':
+        return new Error('An account with this email already exists.');
+      case 'auth/weak-password':
+        return new Error('Password is too weak. Please choose a stronger password.');
+      case 'auth/invalid-email':
+        return new Error('Invalid email address format.');
+      case 'auth/too-many-requests':
+        return new Error('Too many failed attempts. Please try again later.');
+      case 'auth/network-request-failed':
+        return new Error('Network error. Please check your internet connection.');
+      default:
+        return new Error(error.message || 'Authentication failed');
+    }
   }
 }
 
