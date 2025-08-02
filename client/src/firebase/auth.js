@@ -1,5 +1,4 @@
 import {
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   signInWithEmailAndPassword,
@@ -77,24 +76,10 @@ class FirebaseAuthService {
 
   async signInWithGoogle() {
     try {
-      console.log('Starting Google sign-in...');
-
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        console.log('Popup sign-in successful');
-        return await this.handleGoogleSignInSuccess(result.user);
-      } catch (popupError) {
-        if (popupError.code === 'auth/popup-blocked' || 
-            popupError.message?.includes('Cross-Origin-Opener-Policy')) {
-          console.warn('Popup blocked or COOP error, falling back to redirect');
-          await signInWithRedirect(auth, googleProvider);
-          return;
-        }
-        throw popupError;
-      }
+        await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error('Google sign-in error:', error);
-      throw error;
+        console.error('Google sign-in error:', error);
+        throw this.handleAuthError(error);
     }
   }
 
