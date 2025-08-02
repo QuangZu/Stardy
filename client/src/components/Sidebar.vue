@@ -90,7 +90,7 @@ export default {
       userId: null,
       loading: false,
       error: null,
-      defaultAvatar: '/uploads/avatars/default-avatar.jpg',
+      defaultAvatar: 'https://stardy-3old.onrender.com/uploads/avatars/default-avatar.jpg',
       isCollapsed: false,
       showUserDropdown: false,
       userRole: 'user',
