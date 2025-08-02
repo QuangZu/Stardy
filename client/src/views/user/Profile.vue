@@ -233,7 +233,7 @@ export default {
       saving: false,
       changingPassword: false,
       avatarError: false,
-      defaultAvatar: 'http://localhost:3000/uploads/avatars/default-avatar.jpg'
+      defaultAvatar: 'https://stardy-3old.onrender.com/uploads/avatars/default-avatar.jpg'
     }
   },
   async mounted() {
