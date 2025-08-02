@@ -11,6 +11,23 @@ const {
     errorRecovery 
 } = require('./faultTolerance');
 
+const helmetOption = {
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:", "http:"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            connectSrc: ["'self'", "https:", "http:"],
+            fontSrc: ["'self'", "https:", "data:"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'", "https:", "http:"],
+            frameSrc: ["'none'"]
+        }
+    }
+};
+
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -19,8 +36,6 @@ const corsOptions = {
         const allowedOrigins = [
             'http://localhost:8080',
             'http://localhost:3000',
-            'http://127.0.0.1:8080',
-            'http://127.0.0.1:3000',
             'https://stardy.vercel.app',
             'https://stardy-3old.onrender.com'
         ];
@@ -28,7 +43,7 @@ const corsOptions = {
         // In development, be more permissive
         if (process.env.NODE_ENV === 'development') {
             // Allow any localhost origin in development
-            if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            if (origin.includes('localhost')) {
                 return callback(null, true);
             }
         }
@@ -64,11 +79,11 @@ const sanitizeRequest = (req, res, next) => {
                 key.includes('src')) {
                 sanitized[key] = value;
             } else {
-                const sanitizedKey = key.replace(/[$]/g, '_'); // Only replace $ not dots
+                const sanitizedKey = key.replace(/[$]/g, '_');
                 sanitized[sanitizedKey] = typeof value === 'object' && value !== null 
                     ? sanitizeObject(value, excludeFields) 
                     : typeof value === 'string' 
-                        ? value.replace(/[$]/g, '_')  // Only replace $ not dots
+                        ? value.replace(/[$]/g, '_')
                         : value;
             }
         }
@@ -89,7 +104,7 @@ const sanitizeRequest = (req, res, next) => {
 };
 
 module.exports = {
-    helmet: helmet(),
+    helmet: helmet(helmetOption),
     cors: cors(corsOptions),
     compression: compression(),
     rateLimiters,
