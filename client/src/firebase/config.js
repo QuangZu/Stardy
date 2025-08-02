@@ -1,9 +1,7 @@
-// Firebase configuration and initialization
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBDnLLvISFdotmfw-cqqaLAttWWaRvSWDI",
   authDomain: "stardy-205.firebaseapp.com",
@@ -16,21 +14,13 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
-
-// Initialize Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
-
-// Configure Google Provider
 googleProvider.setCustomParameters({
   prompt: 'select_account',
-  // Add additional parameters to help with COOP issues
-  hd: undefined // Allow any domain
+  hd: undefined
 });
 
-// Initialize Analytics (optional)
 let analytics = null;
 try {
   analytics = getAnalytics(app);
