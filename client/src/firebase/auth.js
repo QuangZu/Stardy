@@ -23,7 +23,7 @@ class FirebaseAuthService {
       this.currentUser = user;
       this.notifyAuthStateListeners(user);
     });
-
+    
     this.handleRedirectResult();
   }
 
@@ -32,6 +32,8 @@ class FirebaseAuthService {
       const result = await getRedirectResult(auth);
       if (result && result.user) {
         console.log('Redirect sign-in successful:', result.user.email);
+
+        // Process the redirect result same as popup
         const user = result.user;
         const idToken = await user.getIdToken();
 
@@ -63,19 +65,21 @@ class FirebaseAuthService {
 
   async signInWithGoogle() {
     try {
-      const isLocalhost = window.location.hostname === 'localhost';
+      console.log('Starting Google sign-in...');
 
-      if (!isLocalhost) {
-        console.log('Production environment detected, using redirect...');
+      let user = null;
+
+      try {
+       const result = await signInWithPopup(auth, googleProvider);
+        user = result.user;
+        console.log('Popup sign-in successful');
+      } catch (popupError) {
+        console.warn('Popup sign-in failed, trying redirect...', popupError.code);
+
         await signInWithRedirect(auth, googleProvider);
-        return { redirecting: true };
       }
-
-      // Development (localhost) uses popup
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      console.log('Popup sign-in successful');
-
+      
+      console.log('Google sign-in successful:', user.email);
       const idToken = await user.getIdToken();
       const userData = {
         uid: user.uid,
@@ -85,18 +89,21 @@ class FirebaseAuthService {
         provider: 'google',
         idToken: idToken
       };
-
+      
       const backendResponse = await this.registerWithBackend(userData);
-
+      
       return {
         user: user,
         backendData: backendResponse,
         token: backendResponse.token || idToken
       };
-
     } catch (error) {
-      console.error('Google sign-in error:', error);
-      throw new Error(error.message || 'Failed to sign in with Google');
+      if (error.code === 'auth/popup-blocked' || 
+          error.message.includes('Cross-Origin-Opener-Policy')) {
+        console.warn('Popup blocked or COOP error, falling back to redirect');
+        return await signInWithRedirect(auth, googleProvider);
+      }
+      throw error;
     }
   }
 
@@ -104,7 +111,7 @@ class FirebaseAuthService {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await result.user.getIdToken();
-
+      
       return {
         user: result.user,
         token: idToken
@@ -118,15 +125,16 @@ class FirebaseAuthService {
   async createAccount(email, password, displayName) {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-
+      
+      // Update user profile with display name
       if (displayName) {
         await updateProfile(result.user, {
           displayName: displayName
         });
       }
-
+      
       const idToken = await result.user.getIdToken();
-
+      
       return {
         user: result.user,
         token: idToken
@@ -161,15 +169,16 @@ class FirebaseAuthService {
   async registerWithBackend(userData) {
     try {
       const response = await axios.post(`${backendURL}/auth/google-auth`, userData);
-
+      
+      // Store token in localStorage
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
-
+      
       return response.data;
     } catch (error) {
       console.error('Backend registration error:', error);
-
+      
       if (error.response && error.response.data) {
         throw new Error(error.response.data.message || 'Failed to register with backend');
       } else {
