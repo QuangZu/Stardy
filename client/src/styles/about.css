@@ -1,0 +1,64 @@
+/* About Component Styles */
+
+/* Add top padding to account for fixed navigation */
+.about-page {
+  padding-top: 80px;
+}
+
+/* Enhanced Value Cards with Hover Scale Effect */
+.value-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  transform-origin: center;
+}
+
+.value-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(99, 102, 241, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.value-card .text-5xl {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.value-card:hover .text-5xl {
+  transform: scale(1.1) translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.value-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover h3 {
+  color: #a8b5ff;
+  transform: translateY(-1px);
+}
+
+.value-card p {
+  opacity: 0.9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover p {
+  opacity: 1;
+  transform: translateY(-1px);
+}
