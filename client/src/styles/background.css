@@ -1,0 +1,338 @@
+/* Consolidated Background & Theme Styles */
+
+/* ===== GRADIENT BACKGROUNDS ===== */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+/* Space Background */
+.space-background {
+  background: 
+    radial-gradient(ellipse at top, #0c1445 0%, #1a1a2e 50%, #0f0f23 100%),
+    radial-gradient(ellipse at bottom, #0f0f23 0%, #16213e 50%, #0c1445 100%);
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* ===== ANIMATED BACKGROUNDS ===== */
+/* Persistent Animated Background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animated Stars Background */
+.space-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 40px 70px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(0.5px 0.5px at 90px 40px, #fff, transparent),
+    radial-gradient(0.5px 0.5px at 130px 80px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 160px 30px, #fff, transparent),
+    radial-gradient(0.5px 0.5px at 200px 90px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 250px 50px, #fff, transparent),
+    radial-gradient(0.5px 0.5px at 300px 120px, rgba(255,255,255,0.5), transparent);
+  background-repeat: repeat;
+  background-size: 350px 200px;
+  animation: twinkle 15s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== FLOATING SHAPES ===== */
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 80px;
+  height: 80px;
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.shape-2 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+.shape-3 {
+  width: 60px;
+  height: 60px;
+  top: 80%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+.shape-4 {
+  width: 100px;
+  height: 100px;
+  top: 10%;
+  right: 30%;
+  animation-delay: 1s;
+}
+
+/* ===== SPACE PARTICLES ===== */
+/* Floating Particles Container */
+.space-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* Individual Particle Styles */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(135,206,250,0.4) 50%, transparent 100%);
+  box-shadow: 0 0 10px rgba(135,206,250,0.6);
+  animation: float-particle 8s ease-in-out infinite;
+}
+
+/* Particle Sizes */
+.particle-small {
+  width: 3px;
+  height: 3px;
+}
+
+.particle-medium {
+  width: 5px;
+  height: 5px;
+}
+
+.particle-large {
+  width: 8px;
+  height: 8px;
+}
+
+/* Particle Colors */
+.particle-blue {
+  background: radial-gradient(circle, rgba(135,206,250,0.9) 0%, rgba(70,130,180,0.4) 50%, transparent 100%);
+  box-shadow: 0 0 8px rgba(135,206,250,0.7);
+}
+
+.particle-purple {
+  background: radial-gradient(circle, rgba(186,85,211,0.9) 0%, rgba(138,43,226,0.4) 50%, transparent 100%);
+  box-shadow: 0 0 8px rgba(186,85,211,0.7);
+}
+
+.particle-cyan {
+  background: radial-gradient(circle, rgba(0,255,255,0.9) 0%, rgba(0,191,255,0.4) 50%, transparent 100%);
+  box-shadow: 0 0 8px rgba(0,255,255,0.7);
+}
+
+.particle-white {
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  box-shadow: 0 0 6px rgba(255,255,255,0.8);
+}
+
+/* Particle Positioning Classes */
+.particle-1 { top: 100%; left: 10%; animation-delay: 0s; }
+.particle-2 { top: 100%; left: 20%; animation-delay: 1s; }
+.particle-3 { top: 100%; left: 30%; animation-delay: 2s; }
+.particle-4 { top: 100%; left: 40%; animation-delay: 3s; }
+.particle-5 { top: 100%; left: 50%; animation-delay: 4s; }
+.particle-6 { top: 100%; left: 60%; animation-delay: 5s; }
+.particle-7 { top: 100%; left: 70%; animation-delay: 6s; }
+.particle-8 { top: 100%; left: 80%; animation-delay: 7s; }
+.particle-9 { top: 100%; left: 90%; animation-delay: 0.5s; }
+.particle-10 { top: 100%; left: 15%; animation-delay: 1.5s; }
+.particle-11 { top: 100%; left: 25%; animation-delay: 2.5s; }
+.particle-12 { top: 100%; left: 35%; animation-delay: 3.5s; }
+.particle-13 { top: 100%; left: 45%; animation-delay: 4.5s; }
+.particle-14 { top: 100%; left: 55%; animation-delay: 5.5s; }
+.particle-15 { top: 100%; left: 65%; animation-delay: 6.5s; }
+.particle-16 { top: 100%; left: 75%; animation-delay: 7.5s; }
+.particle-17 { top: 100%; left: 85%; animation-delay: 0.8s; }
+.particle-18 { top: 100%; left: 95%; animation-delay: 1.8s; }
+.particle-19 { top: 100%; left: 5%; animation-delay: 2.8s; }
+.particle-20 { top: 100%; left: 12%; animation-delay: 3.8s; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(120deg); }
+  66% { transform: translateY(10px) rotate(240deg); }
+}
+
+/* Twinkling Stars Animation */
+@keyframes twinkle {
+  0% { 
+    transform: translateY(0px);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% { 
+    transform: translateY(-200px);
+    opacity: 0.8;
+  }
+}
+
+/* Floating Animation */
+@keyframes float-particle {
+  0% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Wiggling Animation */
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0px); }
+  25% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* Apply wiggle to some particles */
+.particle:nth-child(3n) {
+  animation: float-particle 10s ease-in-out infinite, wiggle 3s ease-in-out infinite;
+}
+
+.particle:nth-child(5n) {
+  animation: float-particle 12s ease-in-out infinite, wiggle 4s ease-in-out infinite;
+}
+
+.particle:nth-child(7n) {
+  animation: float-particle 9s ease-in-out infinite, wiggle 2.5s ease-in-out infinite;
+}
+
+/* ===== UI COMPONENTS ===== */
+/* Glass effect utility */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Space Theme UI Components */
+.space-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.space-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(135, 206, 250, 0.4);
+  box-shadow: 0 12px 40px rgba(135, 206, 250, 0.2);
+  transform: translateY(-2px);
+}
+
+.space-button {
+  background: linear-gradient(135deg, rgba(135, 206, 250, 0.3), rgba(70, 130, 180, 0.3));
+  border: 1px solid rgba(135, 206, 250, 0.5);
+  border-radius: 25px;
+  color: white;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.space-button:hover {
+  background: linear-gradient(135deg, rgba(135, 206, 250, 0.5), rgba(70, 130, 180, 0.5));
+  border-color: rgba(135, 206, 250, 0.8);
+  box-shadow: 0 0 20px rgba(135, 206, 250, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ===== UTILITY CLASSES ===== */
+.space-text-primary {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.space-text-secondary {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.space-text-muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.space-glow {
+  text-shadow: 0 0 4px white;
+}
+
+.space-border {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.space-shadow {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SCROLLBAR STYLES ===== */
+/* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* Alternative method for all browsers */
+body {
+  overflow: hidden; /* This will completely disable scrolling */
+}
+
+/* Or use this to hide scrollbar but keep scrolling */
+body {
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+  overflow-y: auto; /* Keep vertical scrolling but hide scrollbar */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .space-particles {
+    display: none; /* Hide particles on mobile for performance */
+  }
+  
+  .space-background::before {
+    animation-duration: 20s; /* Slower animation on mobile */
+  }
+}

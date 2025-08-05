@@ -1,0 +1,85 @@
+/* Careers Component Styles */
+
+/* Add top padding to account for fixed navigation */
+.careers-page {
+  padding-top: 80px;
+}
+
+/* Enhanced Value Cards with Hover Scale Effect */
+.careers-value-card {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  transform-origin: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.careers-value-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(99, 102, 241, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.careers-value-card .text-4xl {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.careers-value-card:hover .text-4xl {
+  transform: scale(1.1) translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.careers-value-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.careers-value-card:hover h3 {
+  color: #a8b5ff;
+  transform: translateY(-1px);
+}
+
+.careers-value-card p {
+  opacity: 0.9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.careers-value-card:hover p {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* Job Position Cards */
+.job-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  transform-origin: center;
+}
+
+.job-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(99, 102, 241, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
