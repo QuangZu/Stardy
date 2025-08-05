@@ -2,7 +2,7 @@ require('dotenv').config();
 
 module.exports = {
     // Server Configuration
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 3001,
     NODE_ENV: process.env.NODE_ENV || 'development',
     
     // Database Configuration
@@ -20,5 +20,5 @@ module.exports = {
     },
     
     // CORS Configuration
-    CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://stardy.vercel.app'
+    CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://stardy-3old.onrender.com'
 };
