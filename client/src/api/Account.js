@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const backendURL = 'http://localhost:3000/api';
+const backendURL = 'https://stardy-3old.onrender.com/api';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');

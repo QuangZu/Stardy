@@ -1,7 +1,7 @@
 import axios from 'axios';
 import firebaseAuth from '@/firebase/auth';
 
-const backendURL = 'http://localhost:3000/api';
+const backendURL = 'https://stardy-3old.onrender.com/api';
 
 // Helper function to get authorization header
 const getAuthHeader = () => {
