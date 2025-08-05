@@ -14,6 +14,10 @@ const QuestionSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    incorrectAnswer: {
+        type: Number,
+        required: true
+    },
     explanation: {
         type: String,
         default: ''

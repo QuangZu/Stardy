@@ -83,6 +83,7 @@ const generateQuizFromNoteAI = async (req, res) => {
                 question: questionData.question.trim(),
                 options: questionData.options || [],
                 correctAnswer: questionData.correctAnswer,
+                incorrectAnswer: questionData.incorrectAnswer,
                 explanation: questionData.explanation || ''
             });
         }
