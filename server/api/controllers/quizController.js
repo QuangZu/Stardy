@@ -253,61 +253,7 @@ const getAllQuizzes = async (req, res) => {
     }
 };
 
-const getQuizStats = async (req, res) => {
-    try {
-        const quiz = await Quiz.findById(req.params.id)
-            .populate('noteId', 'title category')
-            .populate('userId', 'username');
 
-        if (!quiz) {
-            return res.status(404).json({ message: "Quiz not found" });
-        }
-
-        const stats = {
-            quizId: quiz._id,
-            title: quiz.title,
-            description: quiz.description,
-
-            totalQuestions: quiz.questions.length,
-            totalAttempts: quiz.totalAttempts || 0,
-            averageScore: quiz.averageScore || 0,
-            difficulty: quiz.difficulty,
-            category: quiz.category,
-
-            questionStats: quiz.questions.map((question, index) => ({
-                questionIndex: index,
-                question: question.question,
-                correctAnswer: question.correctAnswer,
-                incorrectAnswer: question.incorrectAnswer,
-                correctAnswerText: question.options[question.correctAnswer],
-                incorrectAnswerText: question.incorrectAnswer !== null && question.incorrectAnswer !== undefined
-                    ? question.options[question.incorrectAnswer]
-                    : null,
-                totalOptions: question.options.length,
-                hasExplanation: !!question.explanation
-            })),
-
-            // Overall statistics
-            overallStats: {
-                questionsWithCorrectAnswers: quiz.questions.length, // All questions have correct answers
-                questionsWithIncorrectAnswers: quiz.questions.filter(q =>
-                    q.incorrectAnswer !== null && q.incorrectAnswer !== undefined
-                ).length,
-                questionsWithExplanations: quiz.questions.filter(q => q.explanation).length,
-                averageOptionsPerQuestion: quiz.questions.reduce((sum, q) => sum + q.options.length, 0) / quiz.questions.length,
-                passRate: quiz.totalAttempts > 0 ? Math.round((quiz.averageScore / 100) * 100) : 0
-            }
-        };
-
-        res.status(200).json({
-            success: true,
-            data: stats
-        });
-    } catch (error) {
-        console.error('Error fetching quiz stats:', error);
-        res.status(500).json({ message: error.message });
-    }
-}
 
 module.exports = {
     getUserQuizzes,
@@ -317,6 +263,5 @@ module.exports = {
     createQuiz,
     updateQuiz,
     deleteQuiz,
-    submitQuizAnswers,
-    getQuizStats
+    submitQuizAnswers
 };
