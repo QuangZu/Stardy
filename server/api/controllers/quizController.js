@@ -83,7 +83,7 @@ const generateQuizFromNoteAI = async (req, res) => {
                 question: questionData.question.trim(),
                 options: questionData.options || [],
                 correctAnswer: questionData.correctAnswer,
-                incorrectAnswer: questionData.incorrectAnswer,
+                incorrectAnswer: questionData.incorrectAnswer !== undefined ? questionData.incorrectAnswer : null,
                 explanation: questionData.explanation || ''
             });
         }
@@ -194,12 +194,13 @@ const submitQuizAnswers = async (req, res) => {
         const results = quiz.questions.map((question, index) => {
             const userAnswer = answers[index];
             const isCorrect = userAnswer === question.correctAnswer;
-            const isIncorrect = userAnswer === question.incorrectAnswer;
-            if (isCorrect) 
-                correctAnswers++;
 
-            if (isIncorrect)
+            // Count as incorrect if not correct
+            if (isCorrect) {
+                correctAnswers++;
+            } else {
                 incorrectAnswers++;
+            }
 
             return {
                 questionIndex: index,
@@ -252,6 +253,20 @@ const getAllQuizzes = async (req, res) => {
     }
 };
 
+const getQuizStats = async (req, res) => {
+    try {
+        const quizzes = await Quiz.find({ userId: req.params.id })
+            .populate('noteId', 'title category')
+            .populate('userId', 'username')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(quizzes);
+    } catch (error) {
+        console.error('Error fetching quiz statistic:', error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
 module.exports = {
     getUserQuizzes,
     getAllQuizzes,
@@ -260,5 +275,6 @@ module.exports = {
     createQuiz,
     updateQuiz,
     deleteQuiz,
-    submitQuizAnswers
+    submitQuizAnswers,
+    getQuizStats
 };

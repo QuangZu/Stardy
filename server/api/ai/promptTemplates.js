@@ -168,22 +168,32 @@ Topic: ${topic}
 Difficulty Level: ${difficulty}
 Number of Questions: ${questionCount}
 
-Please create a quiz that includes:
-- Multiple choice questions with 4 options each
-- Clear, unambiguous questions
-- One correct answer per question
-- Appropriate difficulty level
+Please create a quiz in the following JSON format:
+{
+  "title": "Quiz title based on topic",
+  "description": "Brief description of what the quiz covers",
+  "questions": [
+    {
+      "question": "Clear, specific question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "incorrectAnswer": 1,
+      "explanation": "Brief explanation of why this answer is correct"
+    }
+  ]
+}
+
+Requirements:
+- Create exactly ${questionCount} multiple choice questions
+- Each question should have 4 options
+- Questions should test understanding, not just memorization
+- Include clear explanations for correct answers
+- Specify both correctAnswer (index of correct option) and incorrectAnswer (index of a common wrong answer)
+- Appropriate difficulty level: ${difficulty}
 - Educational value
+- Use proper JSON formatting
 
-Format each question as:
-Q[number]: [Question]
-A) [Option 1]
-B) [Option 2]
-C) [Option 3]
-D) [Option 4]
-Correct Answer: [Letter]
-
-Quiz:`,
+Return only the JSON object, no additional text:`,
 
     // Document processing
     processDocument: (documentText, fileName) => `
@@ -229,6 +239,7 @@ Please create a quiz in the following JSON format:
       "question": "Clear, specific question text",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 0,
+      "incorrectAnswer": 1,
       "explanation": "Brief explanation of why this answer is correct"
     }
   ]
@@ -241,6 +252,7 @@ Requirements:
 - Include clear explanations for correct answers
 - Ensure questions are relevant to the note content
 - Vary question difficulty appropriately
+- Specify both correctAnswer (index of correct option) and incorrectAnswer (index of a common wrong answer)
 - Use proper JSON formatting
 
 Return only the JSON object, no additional text:`,

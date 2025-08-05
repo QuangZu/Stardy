@@ -20,6 +20,9 @@ const QuizRouter = (app) => {
         .put(authenticate, QuizController.updateQuiz)
         .delete(authenticate, QuizController.deleteQuiz);
 
+    app.route('/api/quiz/:id/stats')
+        .get(authenticate, QuizController.getQuizStats)
+
     // Admin quiz routes
     app.route('/api/admin/quizzes')
         .get(authenticate, requireRole('admin'), QuizController.getAllQuizzes)
